@@ -1,5 +1,5 @@
-
 import { User, Repository, Issue, PullRequest, Payout } from "@/types";
+import { supabase } from "@/integrations/supabase/client";
 
 // Mock user data
 const user: User = {
@@ -161,6 +161,48 @@ const payouts: Payout[] = [
     updatedAt: "2023-04-21T10:10:00Z",
   }
 ];
+
+// Subscription/Plans API functions
+export const fetchPlans = async () => {
+  const { data, error } = await supabase
+    .from('plans')
+    .select('*');
+    
+  if (error) {
+    console.error("Error fetching plans:", error);
+    throw new Error(error.message);
+  }
+  
+  // Parse JSONB string features into arrays
+  return data.map((plan) => ({
+    ...plan,
+    features: Array.isArray(plan.features) ? plan.features : JSON.parse(plan.features)
+  }));
+};
+
+export const createSubscription = async (userId: string, planId: string) => {
+  const now = new Date();
+  const oneMonthLater = new Date(now);
+  oneMonthLater.setMonth(oneMonthLater.getMonth() + 1);
+  
+  const { data, error } = await supabase
+    .from('subscriptions')
+    .insert({
+      user_id: userId,
+      plan_id: planId,
+      status: 'active',
+      current_period_start: now.toISOString(),
+      current_period_end: oneMonthLater.toISOString()
+    })
+    .select();
+    
+  if (error) {
+    console.error("Error creating subscription:", error);
+    throw new Error(error.message);
+  }
+  
+  return data[0];
+};
 
 // Mock API client
 export const mockApi = {

@@ -1,215 +1,172 @@
 
-import { ApiResponse, Issue, Payout, PullRequest, Repository, User } from "../types";
+import { User, Repository, Issue, PullRequest, Payout } from "@/types";
 
-// Base API URL - would be set from environment in a real app
-const API_BASE_URL = '/api';
+// Mock user data
+const user: User = {
+  id: "user-1",
+  name: "John Doe",
+  email: "john@example.com",
+  avatarUrl: "https://avatars.githubusercontent.com/u/1234567",
+  githubId: "johndoe",
+  coinbaseConnected: true,
+};
 
-// Fetch helper with error handling
-async function fetchWithAuth<T>(
-  endpoint: string,
-  options: RequestInit = {}
-): Promise<ApiResponse<T>> {
-  try {
-    // In a real app, we'd get this from a context or store
-    const token = localStorage.getItem('authToken');
-    
-    const headers = {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...options.headers,
-    };
-
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      ...options,
-      headers,
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      return { 
-        success: false, 
-        error: data.error || 'An unknown error occurred' 
-      };
-    }
-
-    return { success: true, data: data };
-  } catch (error) {
-    console.error('API request failed:', error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Network request failed' 
-    };
+// Mock repository data
+const repositories: Repository[] = [
+  {
+    id: "repo-1",
+    name: "saucy",
+    owner: "johndoe",
+    description: "Automated payouts for GitHub contributors",
+    enabled: true,
+    totalPaid: 1250.00,
+    pendingPayouts: 450.00,
+  },
+  {
+    id: "repo-2",
+    name: "project-x",
+    owner: "johndoe",
+    description: "A revolutionary blockchain project",
+    enabled: true,
+    totalPaid: 780.50,
+    pendingPayouts: 120.00,
+  },
+  {
+    id: "repo-3",
+    name: "web3-tools",
+    owner: "johndoe",
+    description: "Utilities for Web3 developers",
+    enabled: false,
+    totalPaid: 350.25,
+    pendingPayouts: 0,
   }
-}
+];
 
-// Auth endpoints
-export const authApi = {
-  loginWithGithub: () => {
-    // In a real app, redirect to GitHub OAuth
-    window.location.href = `${API_BASE_URL}/auth/github`;
+// Mock issue data
+const issues: Issue[] = [
+  {
+    id: "issue-1",
+    title: "Implement authentication flow",
+    number: 42,
+    repositoryId: "repo-1",
+    repositoryName: "saucy",
+    amount: 100.00,
+    currency: "USD",
+    status: "open",
   },
-  
-  loginWithCoinbase: () => {
-    // In a real app, redirect to Coinbase OAuth
-    window.location.href = `${API_BASE_URL}/auth/coinbase`;
+  {
+    id: "issue-2",
+    title: "Fix responsive design on dashboard",
+    number: 43,
+    repositoryId: "repo-1",
+    repositoryName: "saucy",
+    amount: 50.00,
+    currency: "USD",
+    status: "assigned",
   },
-  
-  logout: async (): Promise<ApiResponse<null>> => {
-    const response = await fetchWithAuth<null>('/auth/logout', { method: 'POST' });
-    if (response.success) {
-      localStorage.removeItem('authToken');
-    }
-    return response;
+  {
+    id: "issue-3",
+    title: "Add support for Ethereum payments",
+    number: 44,
+    repositoryId: "repo-1",
+    repositoryName: "saucy",
+    amount: 300.00,
+    currency: "USD",
+    status: "completed",
+  }
+];
+
+// Mock pull request data
+const pullRequests: PullRequest[] = [
+  {
+    id: "pr-1",
+    title: "Add authentication flow implementation",
+    number: 45,
+    repositoryId: "repo-1",
+    repositoryName: "saucy",
+    contributorId: "user-2",
+    contributorName: "Alice Smith",
+    issueLinkIds: ["issue-1"],
+    status: "merged",
   },
-  
-  getCurrentUser: () => fetchWithAuth<User>('/auth/me'),
-};
+  {
+    id: "pr-2",
+    title: "Fix dashboard responsive design issues",
+    number: 46,
+    repositoryId: "repo-1",
+    repositoryName: "saucy",
+    contributorId: "user-3",
+    contributorName: "Bob Johnson",
+    issueLinkIds: ["issue-2"],
+    status: "open",
+  }
+];
 
-// Repository endpoints
-export const repositoryApi = {
-  listRepositories: () => fetchWithAuth<Repository[]>('/repositories'),
-  
-  getRepository: (id: string) => fetchWithAuth<Repository>(`/repositories/${id}`),
-  
-  enableRepository: (id: string) => 
-    fetchWithAuth<Repository>(`/repositories/${id}/enable`, { method: 'POST' }),
-  
-  disableRepository: (id: string) => 
-    fetchWithAuth<Repository>(`/repositories/${id}/disable`, { method: 'POST' }),
-};
+// Mock payout data - Ensure status values match the Payout interface
+const payouts: Payout[] = [
+  {
+    id: "payout-1",
+    repositoryId: "repo-1",
+    repositoryName: "saucy",
+    pullRequestId: "pr-1",
+    pullRequestNumber: 45,
+    contributorId: "user-2",
+    contributorName: "Alice Smith",
+    amount: 100.00,
+    currency: "USD",
+    status: "paid", // Using one of the allowed status values
+    createdAt: "2023-05-01T12:00:00Z",
+    updatedAt: "2023-05-01T14:30:00Z",
+  },
+  {
+    id: "payout-2",
+    repositoryId: "repo-1",
+    repositoryName: "saucy",
+    pullRequestId: "pr-2",
+    pullRequestNumber: 46,
+    contributorId: "user-3",
+    contributorName: "Bob Johnson",
+    amount: 50.00,
+    currency: "USD",
+    status: "pending", // Using one of the allowed status values
+    createdAt: "2023-05-10T10:15:00Z",
+    updatedAt: "2023-05-10T10:15:00Z",
+  },
+  {
+    id: "payout-3",
+    repositoryId: "repo-2",
+    repositoryName: "project-x",
+    pullRequestId: "pr-3",
+    pullRequestNumber: 12,
+    contributorId: "user-4",
+    contributorName: "Charlie Davis",
+    amount: 200.00,
+    currency: "USD",
+    status: "claimed", // Using one of the allowed status values
+    createdAt: "2023-04-15T09:20:00Z",
+    updatedAt: "2023-04-15T17:45:00Z",
+  },
+  {
+    id: "payout-4",
+    repositoryId: "repo-2",
+    repositoryName: "project-x",
+    pullRequestId: "pr-4",
+    pullRequestNumber: 15,
+    contributorId: "user-5",
+    contributorName: "Diana Evans",
+    amount: 75.00,
+    currency: "USD",
+    status: "failed", // Using one of the allowed status values
+    createdAt: "2023-04-20T14:30:00Z",
+    updatedAt: "2023-04-21T10:10:00Z",
+  }
+];
 
-// Issue endpoints
-export const issueApi = {
-  listIssues: (repositoryId: string) => 
-    fetchWithAuth<Issue[]>(`/repositories/${repositoryId}/issues`),
-  
-  getIssue: (repositoryId: string, issueId: string) => 
-    fetchWithAuth<Issue>(`/repositories/${repositoryId}/issues/${issueId}`),
-  
-  setPayout: (repositoryId: string, issueId: string, amount: number, currency: string) => 
-    fetchWithAuth<Issue>(`/repositories/${repositoryId}/issues/${issueId}/payout`, {
-      method: 'POST',
-      body: JSON.stringify({ amount, currency }),
-    }),
-};
-
-// Payout endpoints
-export const payoutApi = {
-  listPayouts: (repositoryId?: string) => 
-    fetchWithAuth<Payout[]>(repositoryId ? 
-      `/repositories/${repositoryId}/payouts` : '/payouts'),
-  
-  getPayout: (id: string) => fetchWithAuth<Payout>(`/payouts/${id}`),
-  
-  claimPayout: (token: string, email: string) => 
-    fetchWithAuth<Payout>(`/payouts/claim/${token}`, {
-      method: 'POST',
-      body: JSON.stringify({ email }),
-    }),
-};
-
-// Mock API for development - simulating responses
-// In a real app, remove all this mock code
+// Mock API client
 export const mockApi = {
-  // Add mock implementations here for development
-  user: {
-    id: '1',
-    name: 'Jane Developer',
-    email: 'jane@example.com',
-    avatarUrl: 'https://github.com/github.png',
-    githubId: '123456',
-    coinbaseConnected: true
-  },
-  repositories: [
-    {
-      id: '1',
-      name: 'awesome-project',
-      owner: 'saucyorg',
-      description: 'A truly awesome project with many contributors',
-      enabled: true,
-      totalPaid: 1200,
-      pendingPayouts: 300,
-    },
-    {
-      id: '2',
-      name: 'documentation',
-      owner: 'saucyorg',
-      description: 'Project documentation and guides',
-      enabled: true,
-      totalPaid: 400,
-      pendingPayouts: 0,
-    },
-    {
-      id: '3',
-      name: 'marketing-site',
-      owner: 'saucyorg',
-      description: 'Our marketing website',
-      enabled: false,
-      totalPaid: 0,
-      pendingPayouts: 0,
-    }
-  ],
-  issues: [
-    {
-      id: '101',
-      title: 'Fix authentication bug',
-      number: 42,
-      repositoryId: '1',
-      repositoryName: 'awesome-project',
-      amount: 100,
-      currency: 'USD',
-      status: 'open'
-    },
-    {
-      id: '102',
-      title: 'Improve UI responsiveness',
-      number: 43,
-      repositoryId: '1',
-      repositoryName: 'awesome-project',
-      amount: 75,
-      currency: 'USD',
-      status: 'assigned'
-    },
-    {
-      id: '103',
-      title: 'Add dark mode support',
-      number: 44,
-      repositoryId: '1',
-      repositoryName: 'awesome-project',
-      amount: 150,
-      currency: 'USD',
-      status: 'completed'
-    }
-  ],
-  payouts: [
-    {
-      id: 'payout1',
-      repositoryId: '1',
-      repositoryName: 'awesome-project',
-      pullRequestId: 'pr101',
-      pullRequestNumber: 101,
-      contributorId: 'contributor1',
-      contributorName: 'Alice Developer',
-      amount: 100,
-      currency: 'USD',
-      status: 'paid',
-      createdAt: '2025-05-10T12:00:00Z',
-      updatedAt: '2025-05-10T12:30:00Z'
-    },
-    {
-      id: 'payout2',
-      repositoryId: '1',
-      repositoryName: 'awesome-project',
-      pullRequestId: 'pr102',
-      pullRequestNumber: 102,
-      contributorId: 'contributor2',
-      contributorName: 'Bob Coder',
-      amount: 150,
-      currency: 'USD',
-      status: 'pending',
-      createdAt: '2025-05-14T09:00:00Z',
-      updatedAt: '2025-05-14T09:00:00Z'
-    }
-  ]
+  user,
+  repositories,
+  issues,
+  pullRequests,
+  payouts,
 };

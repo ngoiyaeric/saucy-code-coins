@@ -1,3 +1,4 @@
+
 import { User, Repository, Issue, PullRequest, Payout } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -173,10 +174,14 @@ export const fetchPlans = async () => {
     throw new Error(error.message);
   }
   
-  // Parse JSONB string features into arrays
+  // Parse JSONB string features into arrays if needed
   return data.map((plan) => ({
     ...plan,
-    features: Array.isArray(plan.features) ? plan.features : JSON.parse(plan.features)
+    features: Array.isArray(plan.features) 
+      ? plan.features 
+      : typeof plan.features === 'string' 
+        ? JSON.parse(plan.features) 
+        : plan.features
   }));
 };
 

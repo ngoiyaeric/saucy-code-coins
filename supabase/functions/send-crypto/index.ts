@@ -20,6 +20,8 @@ serve(async (req) => {
 
     const { payoutId, userId, walletAddress } = await req.json();
 
+    console.log('Processing crypto payment request:', { payoutId, userId, walletAddress });
+
     // Get the payout details
     const { data: payout, error: payoutError } = await supabaseClient
       .from('payouts')
@@ -47,26 +49,41 @@ serve(async (req) => {
       throw new Error('Coinbase authentication not found');
     }
 
-    // Send crypto via Coinbase API
-    const coinbaseResponse = await fetch('https://api.coinbase.com/v2/accounts/primary/transactions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${coinbaseAuth.access_token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        type: 'send',
-        to: walletAddress,
-        amount: payout.amount.toString(),
-        currency: 'USDC', // Send USDC stablecoin
-        description: `Bounty payment for PR #${payout.pull_request_number} in ${payout.repository_name}`,
-      }),
-    });
+    let transactionId = 'mock-transaction-id';
+    let success = true;
 
-    const coinbaseData = await coinbaseResponse.json();
+    // Check if we're in development mode
+    if (coinbaseAuth.access_token === 'dev-mock-access-token') {
+      console.log('Using development mode for crypto payment');
+      
+      // Simulate successful payment in development mode
+      transactionId = `dev-tx-${Date.now()}`;
+      console.log(`Mock payment of ${payout.amount} USDC to ${walletAddress}`);
+      
+    } else {
+      // Real Coinbase API call (when actual credentials are provided)
+      const coinbaseResponse = await fetch('https://api.coinbase.com/v2/accounts/primary/transactions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${coinbaseAuth.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type: 'send',
+          to: walletAddress,
+          amount: payout.amount.toString(),
+          currency: 'USDC', // Send USDC stablecoin
+          description: `Bounty payment for PR #${payout.pull_request_number} in ${payout.repository_name}`,
+        }),
+      });
 
-    if (!coinbaseResponse.ok) {
-      throw new Error(`Coinbase API error: ${coinbaseData.errors?.[0]?.message || 'Unknown error'}`);
+      const coinbaseData = await coinbaseResponse.json();
+
+      if (!coinbaseResponse.ok) {
+        throw new Error(`Coinbase API error: ${coinbaseData.errors?.[0]?.message || 'Unknown error'}`);
+      }
+
+      transactionId = coinbaseData.data.id;
     }
 
     // Create transaction record
@@ -74,7 +91,7 @@ serve(async (req) => {
       .from('transactions')
       .insert({
         payout_id: payoutId,
-        coinbase_transaction_id: coinbaseData.data.id,
+        coinbase_transaction_id: transactionId,
         amount: payout.amount,
         currency: 'USDC',
         status: 'pending',
@@ -99,8 +116,11 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({
       success: true,
-      transactionId: coinbaseData.data.id,
-      message: 'Crypto payment sent successfully',
+      transactionId: transactionId,
+      message: coinbaseAuth.access_token === 'dev-mock-access-token' 
+        ? 'Mock crypto payment processed successfully (development mode)'
+        : 'Crypto payment sent successfully',
+      developmentMode: coinbaseAuth.access_token === 'dev-mock-access-token'
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

@@ -16,6 +16,21 @@ const CoinbaseConnection = () => {
 
   useEffect(() => {
     checkCoinbaseConnection();
+    
+    // Check for connection success from URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('coinbase') === 'connected') {
+      toast.success('Coinbase connected successfully!');
+      setIsConnected(true);
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+    
+    if (urlParams.get('error')) {
+      toast.error(`Connection failed: ${urlParams.get('error')}`);
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
   }, [user]);
 
   const checkCoinbaseConnection = async () => {
@@ -41,7 +56,8 @@ const CoinbaseConnection = () => {
 
     setIsLoading(true);
     try {
-      const clientId = 'your-coinbase-client-id'; // This would be stored in env
+      // Using generic client ID for now - will be replaced with actual Coinbase credentials
+      const clientId = 'generic-coinbase-client-id';
       const redirectUri = `${window.location.origin}/functions/v1/coinbase-oauth`;
       const state = user.id; // Pass user ID as state
       
@@ -52,7 +68,18 @@ const CoinbaseConnection = () => {
         `state=${state}&` +
         `scope=wallet:accounts:read,wallet:transactions:send`;
 
-      window.location.href = authUrl;
+      // For now, simulate connection since we're using generic keys
+      toast.info('Using generic Coinbase connection for development');
+      
+      // Simulate successful connection after a short delay
+      setTimeout(() => {
+        setIsConnected(true);
+        setIsLoading(false);
+        toast.success('Coinbase connected (development mode)');
+      }, 2000);
+
+      // Uncomment this line when you have real Coinbase credentials:
+      // window.location.href = authUrl;
     } catch (error) {
       console.error('Error connecting to Coinbase:', error);
       toast.error('Failed to connect to Coinbase');
@@ -81,12 +108,17 @@ const CoinbaseConnection = () => {
           {isConnected && (
             <Badge variant="secondary" className="bg-green-100 text-green-800">
               <CheckCircle className="h-3 w-3 mr-1" />
-              Connected
+              Connected (Dev Mode)
             </Badge>
           )}
         </div>
         <CardDescription>
           Connect your Coinbase account to receive crypto payments for your contributions.
+          {!isConnected && (
+            <span className="block mt-2 text-amber-600">
+              Currently using development mode with generic keys.
+            </span>
+          )}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -97,11 +129,14 @@ const CoinbaseConnection = () => {
             className="w-full"
           >
             <Wallet className="mr-2 h-4 w-4" />
-            {isLoading ? 'Connecting...' : 'Connect Coinbase'}
+            {isLoading ? 'Connecting...' : 'Connect Coinbase (Dev Mode)'}
           </Button>
         ) : (
           <div className="text-center text-sm text-muted-foreground">
             Your Coinbase account is connected and ready to receive payments.
+            <div className="mt-2 text-amber-600">
+              Development mode - replace with real credentials for production.
+            </div>
           </div>
         )}
       </CardContent>

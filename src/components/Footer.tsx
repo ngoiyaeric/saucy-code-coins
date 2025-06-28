@@ -53,11 +53,6 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/blog" className="text-muted-foreground hover:text-foreground">
-                  Blog
-                </Link>
-              </li>
-              <li>
                 <a 
                   href="https://github.com/saucy-org/saucy" 
                   target="_blank" 

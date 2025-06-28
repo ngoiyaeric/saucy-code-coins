@@ -59,7 +59,7 @@ const testimonials = [
 const Index = () => {
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar transparent />
+      <Navbar />
       
       {/* Hero Section */}
       <HeroSection />
@@ -91,7 +91,7 @@ const Index = () => {
           
           <div className="text-center mt-12">
             <Button asChild size="lg" className="text-base px-8 py-6">
-              <Link to="/auth/login">
+              <Link to="/auth">
                 Get Started Now
               </Link>
             </Button>
@@ -133,7 +133,7 @@ const Index = () => {
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6">
               <Button asChild size="lg" className="text-base px-8 py-6 bg-white text-saucy-900 hover:bg-white/90">
-                <Link to="/auth/login">
+                <Link to="/auth">
                   Sign Up for Free
                 </Link>
               </Button>

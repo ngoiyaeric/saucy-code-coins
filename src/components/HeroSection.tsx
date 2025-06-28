@@ -5,7 +5,7 @@ import { Github } from "lucide-react";
 
 const HeroSection = () => {
   return (
-    <div className="relative bg-gradient-to-b from-background to-background/80 pt-20">
+    <div className="relative bg-gradient-to-b from-background to-background/80 pt-16">
       {/* Background pattern/gradient */}
       <div className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80" aria-hidden="true">
         <div
@@ -18,7 +18,7 @@ const HeroSection = () => {
       </div>
       
       {/* Hero content */}
-      <div className="container-wide relative pt-20 pb-24 sm:pt-32 sm:pb-32">
+      <div className="container-wide relative pt-16 pb-24 sm:pt-24 sm:pb-32">
         <div className="max-w-3xl mx-auto text-center">
           <h1 className="heading-1">
             <span className="gradient-text">Reward contributors </span> 
@@ -29,7 +29,7 @@ const HeroSection = () => {
           </p>
           <div className="mt-10 flex items-center justify-center gap-x-6">
             <Button asChild size="lg" className="text-base px-8 py-6">
-              <Link to="/auth/login">
+              <Link to="/auth">
                 <Github className="mr-2 h-5 w-5" />
                 Get Started for Free
               </Link>

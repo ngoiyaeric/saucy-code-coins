@@ -14,6 +14,8 @@ import Pricing from "./pages/Pricing";
 import Auth from "./pages/Auth";
 import Features from "./pages/Features";
 import Documentation from "./pages/Documentation";
+import About from "./pages/About";
+import Blog from "./pages/Blog";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -39,6 +41,8 @@ const App = () => {
                 <Route path="/features" element={<Features />} />
                 <Route path="/pricing" element={<Pricing />} />
                 <Route path="/docs" element={<Documentation />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/blog" element={<Blog />} />
                 <Route 
                   path="/dashboard" 
                   element={

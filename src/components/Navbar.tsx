@@ -2,7 +2,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Github } from "lucide-react";
+import { Github, LogOut } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface NavbarProps {
   transparent?: boolean;
@@ -10,9 +11,11 @@ interface NavbarProps {
 
 const Navbar = ({ transparent = false }: NavbarProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
-  // Mock authentication state - in a real app, this would come from a context or store
-  const isAuthenticated = false;
+  const { user, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
 
   return (
     <nav className={`w-full z-50 ${transparent ? 'absolute top-0 left-0' : 'bg-background border-b'}`}>
@@ -47,13 +50,19 @@ const Navbar = ({ transparent = false }: NavbarProps) => {
                 Documentation
               </Link>
 
-              {isAuthenticated ? (
-                <Button asChild variant="default">
-                  <Link to="/dashboard">Dashboard</Link>
-                </Button>
+              {user ? (
+                <div className="flex items-center space-x-2">
+                  <Button asChild variant="default">
+                    <Link to="/dashboard">Dashboard</Link>
+                  </Button>
+                  <Button variant="outline" onClick={handleSignOut}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign Out
+                  </Button>
+                </div>
               ) : (
                 <Button asChild>
-                  <Link to="/auth/login">
+                  <Link to="/auth">
                     <Github className="mr-2 h-4 w-4" />
                     Sign in with GitHub
                   </Link>
@@ -104,7 +113,7 @@ const Navbar = ({ transparent = false }: NavbarProps) => {
         </div>
       </div>
 
-      {/* Mobile menu, toggle classes based on menu state */}
+      {/* Mobile menu */}
       <div
         className={`${
           isMobileMenuOpen ? 'block' : 'hidden'
@@ -130,16 +139,25 @@ const Navbar = ({ transparent = false }: NavbarProps) => {
             Documentation
           </Link>
           
-          {isAuthenticated ? (
-            <Link
-              to="/dashboard"
-              className="block w-full text-center bg-primary hover:bg-primary/90 text-primary-foreground px-3 py-2 rounded-md text-base font-medium"
-            >
-              Dashboard
-            </Link>
+          {user ? (
+            <>
+              <Link
+                to="/dashboard"
+                className="block w-full text-center bg-primary hover:bg-primary/90 text-primary-foreground px-3 py-2 rounded-md text-base font-medium"
+              >
+                Dashboard
+              </Link>
+              <button
+                onClick={handleSignOut}
+                className="flex items-center justify-center w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground px-3 py-2 rounded-md text-base font-medium"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign Out
+              </button>
+            </>
           ) : (
             <Link
-              to="/auth/login"
+              to="/auth"
               className="flex items-center justify-center w-full bg-primary hover:bg-primary/90 text-primary-foreground px-3 py-2 rounded-md text-base font-medium"
             >
               <Github className="mr-2 h-4 w-4" />

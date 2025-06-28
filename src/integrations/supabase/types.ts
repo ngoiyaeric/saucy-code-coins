@@ -9,6 +9,111 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      coinbase_auth: {
+        Row: {
+          access_token: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          refresh_token: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          refresh_token?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          refresh_token?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      github_auth: {
+        Row: {
+          access_token: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          refresh_token: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          refresh_token?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          refresh_token?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      payouts: {
+        Row: {
+          amount: number
+          contributor_id: string
+          contributor_name: string
+          created_at: string
+          currency: string
+          id: string
+          pull_request_id: string
+          pull_request_number: number
+          repository_id: string
+          repository_name: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          contributor_id: string
+          contributor_name: string
+          created_at?: string
+          currency: string
+          id?: string
+          pull_request_id: string
+          pull_request_number: number
+          repository_id: string
+          repository_name: string
+          status: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          contributor_id?: string
+          contributor_name?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          pull_request_id?: string
+          pull_request_number?: number
+          repository_id?: string
+          repository_name?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       plans: {
         Row: {
           created_at: string
@@ -82,6 +187,47 @@ export type Database = {
             columns: ["plan_id"]
             isOneToOne: false
             referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transactions: {
+        Row: {
+          amount: number
+          coinbase_transaction_id: string | null
+          created_at: string
+          currency: string
+          id: string
+          payout_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          coinbase_transaction_id?: string | null
+          created_at?: string
+          currency: string
+          id?: string
+          payout_id: string
+          status: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          coinbase_transaction_id?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          payout_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_payout_id_fkey"
+            columns: ["payout_id"]
+            isOneToOne: false
+            referencedRelation: "payouts"
             referencedColumns: ["id"]
           },
         ]

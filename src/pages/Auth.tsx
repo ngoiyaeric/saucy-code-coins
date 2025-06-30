@@ -39,21 +39,12 @@ const Auth = () => {
       setIsLoading(true);
       setError(null);
       
-      // Get current origin and construct redirect URL
-      const currentOrigin = window.location.origin;
-      const redirectUrl = `${currentOrigin}/dashboard`;
-      
-      console.log('Attempting GitHub sign in with redirect:', redirectUrl);
+      console.log('Attempting GitHub sign in...');
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'github',
         options: {
-          redirectTo: redirectUrl,
-          scopes: 'read:user user:email repo',
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          }
+          redirectTo: `${window.location.origin}/dashboard`,
         }
       });
 
@@ -108,6 +99,9 @@ const Auth = () => {
               <div className="text-sm text-red-700">
                 <p className="font-medium">Authentication Error</p>
                 <p className="mt-1">{error}</p>
+                <p className="mt-2 text-xs">
+                  Please make sure GitHub OAuth is properly configured in your Supabase project settings.
+                </p>
               </div>
             </div>
           )}
@@ -125,7 +119,7 @@ const Auth = () => {
           <div className="text-sm text-muted-foreground text-center">
             <p>By signing in, you agree to our terms of service and privacy policy.</p>
             <p className="mt-2 text-xs">
-              Having trouble? Make sure pop-ups are enabled for this site.
+              Having trouble? Make sure pop-ups are enabled for this site and that GitHub OAuth is configured in Supabase.
             </p>
           </div>
         </CardContent>

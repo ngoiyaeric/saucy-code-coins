@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -14,12 +13,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { mockApi } from "@/lib/api";
 import { Repository, Payout } from "@/types";
 import Navbar from "@/components/Navbar";
-import { CreditCard, Github, BarChart2 } from "lucide-react";
+import { CreditCard, Github, BarChart2, Building2, Users } from "lucide-react";
+import { GitHubService, GitHubOrganization, GitHubRepository } from "@/services/githubService";
+import { toast } from "sonner";
 
 const Dashboard = () => {
   const [repositories, setRepositories] = useState<Repository[]>([]);
   const [payouts, setPayouts] = useState<Payout[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [githubData, setGithubData] = useState<{
+    userRepos: GitHubRepository[];
+    orgRepos: Record<string, GitHubRepository[]>;
+    organizations: GitHubOrganization[];
+  } | null>(null);
+  const [loadingGithub, setLoadingGithub] = useState(false);
 
   // Mock data loading - in a real app, this would use the actual API client
   useEffect(() => {
@@ -32,6 +39,20 @@ const Dashboard = () => {
 
     return () => clearTimeout(timer);
   }, []);
+
+  const fetchGitHubData = async () => {
+    setLoadingGithub(true);
+    try {
+      const data = await GitHubService.getAllAccessibleRepositories();
+      setGithubData(data);
+      toast.success('GitHub data loaded successfully');
+    } catch (error) {
+      console.error('Error fetching GitHub data:', error);
+      toast.error('Failed to load GitHub data. Please check your permissions.');
+    } finally {
+      setLoadingGithub(false);
+    }
+  };
 
   // Helper to format currency
   const formatCurrency = (amount: number, currency: string = "USD") => {
@@ -55,7 +76,7 @@ const Dashboard = () => {
         </header>
 
         {/* Stats cards */}
-        <div className="grid gap-4 md:grid-cols-3 mb-8">
+        <div className="grid gap-4 md:grid-cols-4 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">
@@ -69,6 +90,22 @@ const Dashboard = () => {
               </div>
               <p className="text-xs text-muted-foreground">
                 of {isLoading ? "..." : repositories.length} total repositories
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">
+                Organizations
+              </CardTitle>
+              <Building2 className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {githubData ? githubData.organizations.length : "..."}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                GitHub organizations
               </p>
             </CardContent>
           </Card>
@@ -124,6 +161,7 @@ const Dashboard = () => {
         <Tabs defaultValue="repositories" className="space-y-4">
           <TabsList>
             <TabsTrigger value="repositories">Repositories</TabsTrigger>
+            <TabsTrigger value="organizations">Organizations</TabsTrigger>
             <TabsTrigger value="payouts">Payouts</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
@@ -132,11 +170,40 @@ const Dashboard = () => {
           <TabsContent value="repositories" className="space-y-4">
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-bold">Your Repositories</h2>
-              <Button>
+              <Button onClick={fetchGitHubData} disabled={loadingGithub}>
                 <Github className="mr-2 h-4 w-4" />
-                Connect Repository
+                {loadingGithub ? 'Loading...' : 'Refresh from GitHub'}
               </Button>
             </div>
+
+            {githubData && (
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold mb-4">Personal Repositories ({githubData.userRepos.length})</h3>
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {githubData.userRepos.slice(0, 6).map((repo) => (
+                    <Card key={repo.id}>
+                      <CardHeader>
+                        <CardTitle className="text-sm">{repo.name}</CardTitle>
+                        <CardDescription className="text-xs">{repo.description || 'No description'}</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex justify-between text-xs">
+                          <span>Language: {repo.language || 'N/A'}</span>
+                          <span>Stars: {repo.stargazers_count}</span>
+                        </div>
+                      </CardContent>
+                      <CardFooter>
+                        <Button variant="outline" size="sm" asChild>
+                          <a href={repo.html_url} target="_blank" rel="noopener noreferrer">
+                            View on GitHub
+                          </a>
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {isLoading ? (
               <p>Loading repositories...</p>
@@ -195,6 +262,81 @@ const Dashboard = () => {
                     <Github className="mr-2 h-4 w-4" />
                     Connect Repository
                   </Button>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+          
+          {/* Organizations Tab */}
+          <TabsContent value="organizations" className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-bold">GitHub Organizations</h2>
+              <Button onClick={fetchGitHubData} disabled={loadingGithub}>
+                <Building2 className="mr-2 h-4 w-4" />
+                {loadingGithub ? 'Loading...' : 'Refresh Organizations'}
+              </Button>
+            </div>
+
+            {githubData && githubData.organizations.length > 0 ? (
+              <div className="space-y-6">
+                {githubData.organizations.map((org) => (
+                  <Card key={org.id}>
+                    <CardHeader>
+                      <div className="flex items-center space-x-4">
+                        <img 
+                          src={org.avatar_url} 
+                          alt={org.name || org.login}
+                          className="w-12 h-12 rounded-full"
+                        />
+                        <div>
+                          <CardTitle>{org.name || org.login}</CardTitle>
+                          <CardDescription>{org.description || 'No description available'}</CardDescription>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                          <span>Public Repos: {org.public_repos}</span>
+                          {org.location && <span>Location: {org.location}</span>}
+                        </div>
+                      </div>
+                      
+                      {githubData.orgRepos[org.login] && githubData.orgRepos[org.login].length > 0 && (
+                        <div>
+                          <h4 className="font-medium mb-2">Organization Repositories ({githubData.orgRepos[org.login].length})</h4>
+                          <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
+                            {githubData.orgRepos[org.login].slice(0, 6).map((repo) => (
+                              <div key={repo.id} className="p-2 border rounded-md">
+                                <div className="font-medium text-sm">{repo.name}</div>
+                                <div className="text-xs text-muted-foreground">
+                                  {repo.language || 'N/A'} • ⭐ {repo.stargazers_count}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                          {githubData.orgRepos[org.login].length > 6 && (
+                            <p className="text-xs text-muted-foreground mt-2">
+                              and {githubData.orgRepos[org.login].length - 6} more repositories...
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card>
+                <CardContent className="py-8 flex flex-col items-center justify-center">
+                  <Building2 className="h-12 w-12 text-muted-foreground mb-4" />
+                  <h3 className="text-xl font-semibold mb-2">No organizations found</h3>
+                  <p className="text-muted-foreground text-center max-w-md">
+                    {githubData 
+                      ? "You're not a member of any GitHub organizations, or they haven't been loaded yet."
+                      : "Click 'Refresh Organizations' to load your GitHub organizations."
+                    }
+                  </p>
                 </CardContent>
               </Card>
             )}

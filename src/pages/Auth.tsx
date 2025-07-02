@@ -39,12 +39,17 @@ const Auth = () => {
       setIsLoading(true);
       setError(null);
       
-      console.log('Attempting GitHub sign in...');
+      console.log('Attempting GitHub sign in with organization access...');
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'github',
         options: {
           redirectTo: `${window.location.origin}/dashboard`,
+          scopes: 'read:user user:email read:org repo',
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          }
         }
       });
 
@@ -89,7 +94,8 @@ const Auth = () => {
           </div>
           <CardTitle className="text-2xl font-bold">Welcome to Saucy</CardTitle>
           <CardDescription>
-            Sign in with GitHub to start earning crypto for your contributions
+            Sign in with GitHub to start earning crypto for your contributions. 
+            We'll access your repositories and organizations to set up automated payouts.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -100,11 +106,22 @@ const Auth = () => {
                 <p className="font-medium">Authentication Error</p>
                 <p className="mt-1">{error}</p>
                 <p className="mt-2 text-xs">
-                  Please make sure GitHub OAuth is properly configured in your Supabase project settings.
+                  Please make sure GitHub OAuth is properly configured in your Supabase project settings with the correct scopes.
                 </p>
               </div>
             </div>
           )}
+          
+          <div className="bg-blue-50 border border-blue-200 rounded-md p-3 flex items-start space-x-3">
+            <Github className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
+            <div className="text-sm text-blue-700">
+              <p className="font-medium">Organization Access Required</p>
+              <p className="mt-1">
+                We need access to your GitHub organizations and repositories to set up automated bounty payouts. 
+                You'll be prompted to grant organization access during sign-in.
+              </p>
+            </div>
+          </div>
           
           <Button
             onClick={handleGitHubSignIn}
@@ -119,7 +136,7 @@ const Auth = () => {
           <div className="text-sm text-muted-foreground text-center">
             <p>By signing in, you agree to our terms of service and privacy policy.</p>
             <p className="mt-2 text-xs">
-              Having trouble? Make sure pop-ups are enabled for this site and that GitHub OAuth is configured in Supabase.
+              Having trouble? Make sure pop-ups are enabled and that GitHub OAuth is configured in Supabase with organization access permissions.
             </p>
           </div>
         </CardContent>

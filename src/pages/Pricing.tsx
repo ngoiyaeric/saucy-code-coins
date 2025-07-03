@@ -93,87 +93,72 @@ const Pricing = () => {
               Simple, transparent pricing
             </h1>
             <p className="mt-4 text-xl text-muted-foreground max-w-3xl mx-auto">
-              Choose the plan that fits your project's needs
+              Start with a free trial, then pay only when your contributors get paid
             </p>
             
-            <div className="mt-10 flex items-center justify-center">
-              <Label htmlFor="billing-toggle" className="mr-4 text-sm font-medium">
-                Monthly
-              </Label>
-              <Switch
-                id="billing-toggle"
-                checked={billingCycle === 'yearly'}
-                onCheckedChange={(checked) => setBillingCycle(checked ? 'yearly' : 'monthly')}
-              />
-              <Label htmlFor="billing-toggle" className="ml-4 text-sm font-medium flex items-center">
-                Yearly
-                <Badge className="ml-2" variant="outline">Save 20%</Badge>
-              </Label>
+            <div className="mt-10 bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg p-6 max-w-2xl mx-auto">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-primary mb-2">2.5%</div>
+                <div className="text-lg font-medium mb-1">Transaction Fee</div>
+                <div className="text-sm text-muted-foreground">Only charged when contributors receive payouts</div>
+              </div>
             </div>
           </div>
           
-          {isLoading ? (
-            <div className="grid md:grid-cols-3 gap-8 place-items-center">
-              {[...Array(3)].map((_, i) => (
-                <Card key={i} className="w-full h-[400px] opacity-50 animate-pulse">
-                  <div className="h-full bg-muted"></div>
-                </Card>
-              ))}
-            </div>
-          ) : plans ? (
-            <div className="grid md:grid-cols-3 gap-8">
-              {plans.map((plan: Plan) => (
-                <Card 
-                  key={plan.id} 
-                  className={`w-full ${plan.is_popular ? 'border-primary shadow-lg' : ''}`}
-                >
-                  {plan.is_popular && (
-                    <div className="absolute top-0 right-0 transform translate-x-1/3 -translate-y-1/3">
-                      <Badge className="px-3 py-1">Most Popular</Badge>
-                    </div>
-                  )}
-                  <CardHeader>
-                    <CardTitle>{plan.name}</CardTitle>
-                    <CardDescription>{plan.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <span className="text-4xl font-bold">
-                        {formatPrice(billingCycle === 'monthly' ? plan.price_monthly : plan.price_yearly)}
-                      </span>
-                      {plan.price_monthly > 0 && (
-                        <span className="text-muted-foreground">
-                          /{billingCycle === 'monthly' ? 'month' : 'year'}
-                        </span>
-                      )}
-                    </div>
-                    
-                    <div className="space-y-2 pt-4">
-                      {plan.features.map((feature, index) => (
-                        <div key={index} className="flex items-center">
-                          <Check className="h-4 w-4 text-primary mr-2" />
-                          <span>{feature}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                  <CardFooter>
-                    <Button 
-                      onClick={() => handleSelectPlan(plan)}
-                      className="w-full"
-                      variant={plan.is_popular ? "default" : "outline"}
-                    >
-                      {plan.price_monthly === 0 ? "Get Started" : "Subscribe"}
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center text-muted-foreground">
-              Failed to load pricing plans
-            </div>
-          )}
+           {isLoading ? (
+             <div className="flex justify-center">
+               <Card className="w-full max-w-md h-[400px] opacity-50 animate-pulse">
+                 <div className="h-full bg-muted"></div>
+               </Card>
+             </div>
+           ) : plans ? (
+             <div className="flex justify-center">
+               {plans.map((plan: Plan) => (
+                 <Card 
+                   key={plan.id} 
+                   className={`w-full max-w-md ${plan.is_popular ? 'border-primary shadow-lg relative' : ''}`}
+                 >
+                   {plan.is_popular && (
+                     <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                       <Badge className="px-3 py-1">Recommended</Badge>
+                     </div>
+                   )}
+                   <CardHeader className="text-center">
+                     <CardTitle className="text-2xl">{plan.name}</CardTitle>
+                     <CardDescription className="text-base">{plan.description}</CardDescription>
+                   </CardHeader>
+                   <CardContent className="space-y-6">
+                     <div className="text-center">
+                       <span className="text-5xl font-bold text-primary">Free</span>
+                       <div className="text-sm text-muted-foreground mt-2">7-day trial included</div>
+                     </div>
+                     
+                     <div className="space-y-3">
+                       {plan.features.map((feature, index) => (
+                         <div key={index} className="flex items-start">
+                           <Check className="h-5 w-5 text-primary mr-3 mt-0.5 flex-shrink-0" />
+                           <span className="text-sm">{feature}</span>
+                         </div>
+                       ))}
+                     </div>
+                   </CardContent>
+                   <CardFooter>
+                     <Button 
+                       onClick={() => handleSelectPlan(plan)}
+                       className="w-full"
+                       size="lg"
+                     >
+                       Start Free Trial
+                     </Button>
+                   </CardFooter>
+                 </Card>
+               ))}
+             </div>
+           ) : (
+             <div className="text-center text-muted-foreground">
+               Failed to load pricing plans
+             </div>
+           )}
           
           <div className="mt-16 text-center">
             <h2 className="text-2xl font-bold">Need a custom plan?</h2>

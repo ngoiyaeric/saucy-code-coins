@@ -5,24 +5,24 @@ import { Github } from "lucide-react";
 
 const HeroSection = () => {
   return (
-    <div className="relative min-h-screen bg-background overflow-hidden tech-grid">
+    <div className="relative min-h-screen bg-background overflow-hidden tech-grid border-b border-border/20">
       {/* 3D Background Elements */}
       <div className="absolute inset-0 perspective-container">
-        {/* Floating geometric shapes */}
-        <div className="absolute top-20 left-10 w-20 h-20 bg-primary/20 rounded-lg floating-3d transform rotate-45" style={{ animationDelay: '0s' }}></div>
-        <div className="absolute top-40 right-20 w-16 h-16 bg-accent/20 rounded-full floating-3d" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute bottom-40 left-20 w-12 h-12 bg-primary/30 rounded-lg floating-3d transform rotate-12" style={{ animationDelay: '4s' }}></div>
+        {/* Floating geometric shapes - adjusted for white theme */}
+        <div className="absolute top-20 left-10 w-20 h-20 bg-primary/10 rounded-lg floating-3d transform rotate-45 border border-primary/20" style={{ animationDelay: '0s' }}></div>
+        <div className="absolute top-40 right-20 w-16 h-16 bg-accent/10 rounded-full floating-3d border border-accent/20" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute bottom-40 left-20 w-12 h-12 bg-primary/20 rounded-lg floating-3d transform rotate-12 border border-primary/30" style={{ animationDelay: '4s' }}></div>
         
-        {/* Large gradient orbs */}
-        <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full glow-effect opacity-20" style={{ background: 'var(--gradient-primary)' }}></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full glow-effect opacity-15" style={{ background: 'var(--gradient-accent)' }}></div>
+        {/* Large gradient orbs - adjusted for white theme */}
+        <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full opacity-5" style={{ background: 'var(--gradient-primary)' }}></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full opacity-5" style={{ background: 'var(--gradient-accent)' }}></div>
         
-        {/* Tech circuit pattern */}
-        <div className="absolute top-0 right-0 w-full h-full opacity-10">
+        {/* Tech circuit pattern - adjusted for white theme */}
+        <div className="absolute top-0 right-0 w-full h-full opacity-5">
           <svg className="w-full h-full" viewBox="0 0 400 400" fill="none">
             <path d="M0 200 L100 200 L120 180 L140 200 L200 200 L220 220 L240 200 L400 200" stroke="currentColor" strokeWidth="2" className="text-primary"/>
             <path d="M200 0 L200 100 L180 120 L200 140 L200 200 L220 220 L200 240 L200 400" stroke="currentColor" strokeWidth="2" className="text-primary"/>
-            <circle cx="200" cy="200" r="5" fill="currentColor" className="text-primary pulse-glow"/>
+            <circle cx="200" cy="200" r="5" fill="currentColor" className="text-primary"/>
             <circle cx="120" cy="180" r="3" fill="currentColor" className="text-accent"/>
             <circle cx="220" cy="220" r="3" fill="currentColor" className="text-accent"/>
           </svg>
@@ -49,7 +49,7 @@ const HeroSection = () => {
             </h1>
           </div>
           
-          <p className="mt-8 text-xl sm:text-2xl leading-relaxed text-foreground/90 max-w-4xl mx-auto backdrop-blur-md bg-background/20 rounded-3xl p-8 border border-border/30 shadow-2xl">
+          <p className="mt-8 text-xl sm:text-2xl leading-relaxed text-foreground/80 max-w-4xl mx-auto backdrop-blur-md bg-white/60 rounded-3xl p-8 border border-border/50 shadow-2xl">
             Set bounties on GitHub issues and automatically pay contributors in cryptocurrency when their pull requests are merged. 
             <span className="gradient-text font-semibold block mt-2">
               Zero manual work. Maximum contributor satisfaction.
@@ -82,7 +82,7 @@ const HeroSection = () => {
                   <span className="relative z-10 font-semibold">Start Automating Payouts</span>
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="lg" className="text-lg px-12 py-8 card-3d border-primary/30 bg-background/40 backdrop-blur-md hover:bg-background/60 min-w-[240px]">
+              <Button asChild variant="outline" size="lg" className="text-lg px-12 py-8 card-3d border-primary/50 bg-white/80 backdrop-blur-md hover:bg-white/90 min-w-[240px]">
                 <Link to="/docs">
                   <span className="text-foreground">View Documentation</span>
                 </Link>

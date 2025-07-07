@@ -135,15 +135,15 @@ const Index = () => {
           </div>
         </div>
         
-        {/* Background floating elements */}
-        <div className="absolute top-20 right-10 w-16 h-16 bg-accent/10 rounded-full floating-3d" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute bottom-20 left-10 w-12 h-12 bg-primary/10 rounded-lg floating-3d transform rotate-45" style={{ animationDelay: '3s' }}></div>
+        {/* Background floating elements - adjusted for white theme */}
+        <div className="absolute top-20 right-10 w-16 h-16 bg-accent/5 rounded-full floating-3d border border-accent/20" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute bottom-20 left-10 w-12 h-12 bg-primary/5 rounded-lg floating-3d transform rotate-45 border border-primary/20" style={{ animationDelay: '3s' }}></div>
       </section>
       
       {/* Testimonials Section */}
-      <section className="py-32 relative overflow-hidden">
-        {/* Background tech pattern */}
-        <div className="absolute inset-0 opacity-5">
+      <section className="py-32 relative overflow-hidden bg-secondary/30">
+        {/* Background tech pattern - adjusted for white theme */}
+        <div className="absolute inset-0 opacity-3">
           <div className="absolute top-0 left-0 w-full h-full" style={{ 
             backgroundImage: `radial-gradient(circle at 25% 25%, hsl(var(--primary)) 2px, transparent 2px),
                              radial-gradient(circle at 75% 75%, hsl(var(--accent)) 1px, transparent 1px)`,
@@ -234,7 +234,7 @@ const Index = () => {
               </h2>
             </div>
             
-            <p className="text-lg text-white/90 max-w-3xl mx-auto mb-12 backdrop-blur-sm bg-white/10 rounded-2xl p-6 border border-white/20">
+            <p className="text-lg text-white/90 max-w-3xl mx-auto mb-12 backdrop-blur-sm bg-white/20 rounded-2xl p-6 border border-white/30">
               Start automating your open-source payments today and focus on what matters: 
               <span className="font-semibold text-white"> building great software.</span>
             </p>

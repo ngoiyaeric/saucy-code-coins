@@ -5,53 +5,53 @@
 
 @layer base {
   :root {
-    --background: 220 27% 6%;
-    --foreground: 210 40% 98%;
+    --background: 0 0% 100%;
+    --foreground: 220 27% 15%;
 
-    --card: 220 27% 8%;
-    --card-foreground: 210 40% 98%;
+    --card: 0 0% 98%;
+    --card-foreground: 220 27% 15%;
 
-    --popover: 220 27% 8%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 0 0% 98%;
+    --popover-foreground: 220 27% 15%;
 
     --primary: 200 100% 50%;
-    --primary-foreground: 220 27% 6%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 27% 12%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 220 27% 15%;
 
-    --muted: 220 27% 12%;
-    --muted-foreground: 210 50% 70%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 220 27% 45%;
 
     --accent: 260 100% 50%;
-    --accent-foreground: 210 40% 98%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 220 27% 20%;
-    --input: 220 27% 18%;
+    --border: 0 0% 90%;
+    --input: 0 0% 94%;
     --ring: 200 100% 50%;
 
     --radius: 0.75rem;
 
-    /* Enhanced futuristic gradients */
+    /* Enhanced futuristic gradients for white theme */
     --gradient-primary: linear-gradient(135deg, hsl(200 100% 50%), hsl(260 100% 50%));
-    --gradient-secondary: linear-gradient(135deg, hsl(220 27% 12%), hsl(220 27% 18%));
+    --gradient-secondary: linear-gradient(135deg, hsl(0 0% 98%), hsl(0 0% 95%));
     --gradient-accent: linear-gradient(45deg, hsl(200 100% 50%), hsl(260 100% 50%), hsl(300 100% 50%));
-    --gradient-hero: linear-gradient(135deg, hsl(200 100% 50% / 0.1), hsl(260 100% 50% / 0.1));
-    --gradient-card: linear-gradient(145deg, hsl(220 27% 8%), hsl(220 27% 12%));
+    --gradient-hero: linear-gradient(135deg, hsl(200 100% 50% / 0.05), hsl(260 100% 50% / 0.05));
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(0 0% 98%));
     
-    /* Enhanced 3D Effects */
-    --shadow-3d: 0 20px 40px -12px hsl(200 100% 50% / 0.4), 0 0 0 1px hsl(200 100% 50% / 0.1);
-    --shadow-glow: 0 0 60px hsl(200 100% 50% / 0.4);
-    --shadow-card: 0 25px 50px -12px hsl(220 27% 6% / 0.8);
-    --shadow-text: 2px 2px 4px hsl(220 27% 6% / 0.5);
+    /* Enhanced 3D Effects for white theme */
+    --shadow-3d: 0 20px 40px -12px hsl(220 27% 15% / 0.1), 0 0 0 1px hsl(200 100% 50% / 0.1);
+    --shadow-glow: 0 0 60px hsl(200 100% 50% / 0.3);
+    --shadow-card: 0 10px 30px -5px hsl(220 27% 15% / 0.08);
+    --shadow-text: 1px 1px 2px hsl(220 27% 15% / 0.1);
     
-    /* Enhanced tech patterns */
-    --grid-pattern: radial-gradient(circle at 1px 1px, hsl(200 100% 50% / 0.15) 1px, transparent 0);
-    --circuit-pattern: linear-gradient(90deg, hsl(200 100% 50% / 0.1) 1px, transparent 1px), 
-                      linear-gradient(hsl(200 100% 50% / 0.1) 1px, transparent 1px);
+    /* Enhanced tech patterns for white theme */
+    --grid-pattern: radial-gradient(circle at 1px 1px, hsl(200 100% 50% / 0.1) 1px, transparent 0);
+    --circuit-pattern: linear-gradient(90deg, hsl(200 100% 50% / 0.05) 1px, transparent 1px), 
+                      linear-gradient(hsl(200 100% 50% / 0.05) 1px, transparent 1px);
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;

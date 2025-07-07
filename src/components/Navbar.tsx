@@ -1,8 +1,8 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Github, LogOut } from "lucide-react";
+import { Github, LogOut, Moon, Sun } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface NavbarProps {
@@ -11,7 +11,24 @@ interface NavbarProps {
 
 const Navbar = ({ transparent = false }: NavbarProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isDark, setIsDark] = useState(false);
   const { user, signOut } = useAuth();
+
+  useEffect(() => {
+    // Check if dark mode is already set
+    const isDarkMode = document.documentElement.classList.contains('dark');
+    setIsDark(isDarkMode);
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = !isDark;
+    setIsDark(newTheme);
+    if (newTheme) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  };
 
   const handleSignOut = async () => {
     await signOut();
@@ -49,6 +66,15 @@ const Navbar = ({ transparent = false }: NavbarProps) => {
               >
                 Documentation
               </Link>
+
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={toggleTheme}
+                className="mr-2 p-2"
+              >
+                {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </Button>
 
               {user ? (
                 <div className="flex items-center space-x-2">
@@ -138,6 +164,14 @@ const Navbar = ({ transparent = false }: NavbarProps) => {
           >
             Documentation
           </Link>
+          
+          <button
+            onClick={toggleTheme}
+            className="flex items-center justify-center w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground px-3 py-2 rounded-md text-base font-medium"
+          >
+            {isDark ? <Sun className="mr-2 h-4 w-4" /> : <Moon className="mr-2 h-4 w-4" />}
+            {isDark ? 'Light Mode' : 'Dark Mode'}
+          </button>
           
           {user ? (
             <>

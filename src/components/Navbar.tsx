@@ -11,23 +11,32 @@ interface NavbarProps {
 
 const Navbar = ({ transparent = false }: NavbarProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isDark, setIsDark] = useState(false);
+  const [isDark, setIsDark] = useState(() => {
+    // Check if dark mode preference exists in localStorage or system preference
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('theme');
+      if (stored) {
+        return stored === 'dark';
+      }
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return false;
+  });
   const { user, signOut } = useAuth();
 
   useEffect(() => {
-    // Check if dark mode is already set
-    const isDarkMode = document.documentElement.classList.contains('dark');
-    setIsDark(isDarkMode);
-  }, []);
-
-  const toggleTheme = () => {
-    const newTheme = !isDark;
-    setIsDark(newTheme);
-    if (newTheme) {
+    // Apply theme on mount and when isDark changes
+    if (isDark) {
       document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
     } else {
       document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
     }
+  }, [isDark]);
+
+  const toggleTheme = () => {
+    setIsDark(!isDark);
   };
 
   const handleSignOut = async () => {
@@ -170,7 +179,7 @@ const Navbar = ({ transparent = false }: NavbarProps) => {
             className="flex items-center justify-center w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground px-3 py-2 rounded-md text-base font-medium"
           >
             {isDark ? <Sun className="mr-2 h-4 w-4" /> : <Moon className="mr-2 h-4 w-4" />}
-            {isDark ? 'Light Mode' : 'Dark Mode'}
+            Switch to {isDark ? 'Light' : 'Dark'} Theme
           </button>
           
           {user ? (

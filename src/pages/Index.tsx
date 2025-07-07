@@ -88,7 +88,7 @@ const Index = () => {
                 
                 <div className="card-3d rounded-2xl p-8 h-full group-hover:scale-105 transition-all duration-300">
                   {/* Floating step number */}
-                  <div className="absolute -top-6 left-8 w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg glow-effect" 
+                  <div className="absolute -top-6 left-8 w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg glow-effect z-10 text-white" 
                        style={{ background: 'var(--gradient-primary)' }}>
                     {step.number}
                   </div>

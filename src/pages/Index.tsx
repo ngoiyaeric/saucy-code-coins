@@ -78,7 +78,7 @@ const Index = () => {
       <section className="relative py-40 tech-grid">
         <div className="container-wide relative z-10">
           <div className="text-center mb-24 perspective-container">
-            <h2 className="heading-2 gradient-text mb-8">How Saucy Works</h2>
+            <h2 className="heading-2 text-primary mb-8" style={{ lineHeight: '1.2' }}>How Saucy Works</h2>
             <p className="text-xl text-foreground/90 max-w-3xl mx-auto leading-relaxed">
               A simple 4-step process that saves hours of manual work and gets contributors paid instantly.
             </p>
@@ -153,7 +153,7 @@ const Index = () => {
         
         <div className="container-wide relative z-10">
           <div className="text-center mb-20 perspective-container">
-            <h2 className="heading-2 gradient-text mb-6">Trusted by Open Source Communities</h2>
+            <h2 className="heading-2 text-primary mb-8" style={{ lineHeight: '1.2' }}>Trusted by Open Source Communities</h2>
             <p className="text-lg text-foreground/90 max-w-2xl mx-auto">
               See what maintainers and contributors are saying about Saucy.
             </p>

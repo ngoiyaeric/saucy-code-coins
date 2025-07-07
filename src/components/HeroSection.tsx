@@ -35,10 +35,10 @@ const HeroSection = () => {
           {/* 3D Title with enhanced depth */}
           <div className="relative mb-8">
             <h1 className="heading-1 relative z-10 hero-content">
-              <span className="gradient-text block transform-gpu mb-4">
+              <span className="gradient-text block transform-gpu mb-4" style={{ lineHeight: '1.1' }}>
                 Automate crypto rewards
               </span>
-              <span className="text-foreground block">
+              <span className="text-foreground block" style={{ lineHeight: '1.1' }}>
                 for your GitHub contributors
               </span>
             </h1>
@@ -51,7 +51,7 @@ const HeroSection = () => {
           
           <p className="mt-8 text-xl sm:text-2xl leading-relaxed text-foreground/80 max-w-4xl mx-auto backdrop-blur-md bg-white/60 rounded-3xl p-8 border border-border/50 shadow-2xl">
             Set bounties on GitHub issues and automatically pay contributors in cryptocurrency when their pull requests are merged. 
-            <span className="gradient-text font-semibold block mt-2">
+            <span className="text-primary font-semibold block mt-2">
               Zero manual work. Maximum contributor satisfaction.
             </span>
           </p>
@@ -59,15 +59,15 @@ const HeroSection = () => {
           {/* Stats Section */}
           <div className="mt-16 mb-12 stats-grid max-w-3xl mx-auto">
             <div className="card-3d rounded-2xl p-6 text-center">
-              <div className="text-3xl font-bold gradient-text">$50K+</div>
+              <div className="text-3xl font-bold text-primary">$50K+</div>
               <div className="text-sm text-foreground/70 mt-1">Payouts Processed</div>
             </div>
             <div className="card-3d rounded-2xl p-6 text-center">
-              <div className="text-3xl font-bold gradient-text">500+</div>
+              <div className="text-3xl font-bold text-primary">500+</div>
               <div className="text-sm text-foreground/70 mt-1">Active Repositories</div>
             </div>
             <div className="card-3d rounded-2xl p-6 text-center">
-              <div className="text-3xl font-bold gradient-text">2.5%</div>
+              <div className="text-3xl font-bold text-primary">2.5%</div>
               <div className="text-sm text-foreground/70 mt-1">Simple Fee</div>
             </div>
           </div>

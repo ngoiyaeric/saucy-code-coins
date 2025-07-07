@@ -135,8 +135,13 @@
   .gradient-text {
     @apply bg-clip-text text-transparent;
     background: var(--gradient-primary);
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
     position: relative;
     z-index: 10;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
   .card-3d {

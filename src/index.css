@@ -5,35 +5,48 @@
 
 @layer base {
   :root {
-    --background: 210 50% 98%;
-    --foreground: 210 50% 10%;
+    --background: 220 27% 6%;
+    --foreground: 210 40% 98%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 210 50% 10%;
+    --card: 220 27% 8%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 210 50% 10%;
+    --popover: 220 27% 8%;
+    --popover-foreground: 210 40% 98%;
 
     --primary: 200 100% 50%;
-    --primary-foreground: 210 40% 98%;
+    --primary-foreground: 220 27% 6%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 210 50% 10%;
+    --secondary: 220 27% 12%;
+    --secondary-foreground: 210 40% 98%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 210 50% 40%;
+    --muted: 220 27% 12%;
+    --muted-foreground: 210 50% 70%;
 
-    --accent: 200 100% 96%;
-    --accent-foreground: 200 100% 30%;
+    --accent: 260 100% 50%;
+    --accent-foreground: 210 40% 98%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
+    --border: 220 27% 20%;
+    --input: 220 27% 18%;
     --ring: 200 100% 50%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
+
+    /* Futuristic gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(200 100% 50%), hsl(260 100% 50%));
+    --gradient-secondary: linear-gradient(135deg, hsl(220 27% 12%), hsl(220 27% 18%));
+    --gradient-accent: linear-gradient(45deg, hsl(200 100% 50%), hsl(260 100% 50%), hsl(300 100% 50%));
+    
+    /* 3D Effects */
+    --shadow-3d: 0 10px 30px -10px hsl(200 100% 50% / 0.3), 0 0 0 1px hsl(200 100% 50% / 0.1);
+    --shadow-glow: 0 0 40px hsl(200 100% 50% / 0.4);
+    --shadow-card: 0 25px 50px -12px hsl(220 27% 6% / 0.8);
+    
+    /* Tech patterns */
+    --grid-pattern: radial-gradient(circle at 1px 1px, hsl(200 100% 50% / 0.1) 1px, transparent 0);
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -46,32 +59,32 @@
   }
 
   .dark {
-    --background: 210 50% 9%;
+    --background: 210 27% 4%;
     --foreground: 210 40% 98%;
 
-    --card: 210 50% 12%;
+    --card: 210 27% 6%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 210 50% 12%;
+    --popover: 210 27% 6%;
     --popover-foreground: 210 40% 98%;
 
     --primary: 200 100% 50%;
-    --primary-foreground: 210 40% 98%;
+    --primary-foreground: 210 27% 4%;
 
-    --secondary: 210 50% 18%;
+    --secondary: 210 27% 10%;
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 210 50% 18%;
+    --muted: 210 27% 10%;
     --muted-foreground: 210 50% 70%;
 
-    --accent: 200 100% 20%;
-    --accent-foreground: 200 100% 80%;
+    --accent: 260 100% 50%;
+    --accent-foreground: 210 40% 98%;
 
     --destructive: 0 62.8% 50.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 210 50% 20%;
-    --input: 210 50% 20%;
+    --border: 210 27% 18%;
+    --input: 210 27% 16%;
     --ring: 200 100% 50%;
 
     --sidebar-background: 210 50% 12%;
@@ -113,6 +126,52 @@
   }
 
   .gradient-text {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-saucy-500 to-blue-600;
+    @apply bg-clip-text text-transparent;
+    background: var(--gradient-primary);
+  }
+
+  .card-3d {
+    @apply relative transform-gpu;
+    background: var(--gradient-secondary);
+    box-shadow: var(--shadow-card);
+    border: 1px solid hsl(var(--border));
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .card-3d:hover {
+    transform: translateY(-8px) rotateX(5deg);
+    box-shadow: var(--shadow-3d);
+  }
+
+  .tech-grid {
+    background-image: var(--grid-pattern);
+    background-size: 20px 20px;
+  }
+
+  .floating-3d {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .glow-effect {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .perspective-container {
+    perspective: 1000px;
+    transform-style: preserve-3d;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px) rotateX(0deg); }
+    50% { transform: translateY(-20px) rotateX(5deg); }
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 20px hsl(var(--primary) / 0.3); }
+    50% { box-shadow: 0 0 40px hsl(var(--primary) / 0.6); }
+  }
+
+  .pulse-glow {
+    animation: pulse-glow 3s ease-in-out infinite;
   }
 }

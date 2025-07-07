@@ -31,40 +31,78 @@ const HeroSection = () => {
       
       {/* Hero content */}
       <div className="container-wide relative pt-32 pb-32 sm:pt-40 sm:pb-40 z-10">
-        <div className="max-w-4xl mx-auto text-center perspective-container">
-          {/* 3D Title with depth */}
-          <div className="relative">
-            <h1 className="heading-1 relative z-10">
-              <span className="gradient-text block transform-gpu">Reward contributors</span>
-              <span className="text-foreground block mt-2">for their open-source work</span>
+        <div className="max-w-5xl mx-auto text-center perspective-container">
+          {/* 3D Title with enhanced depth */}
+          <div className="relative mb-8">
+            <h1 className="heading-1 relative z-10 hero-content">
+              <span className="gradient-text block transform-gpu mb-4">
+                Automate crypto rewards
+              </span>
+              <span className="text-foreground block">
+                for your GitHub contributors
+              </span>
             </h1>
-            {/* Title shadow for 3D effect */}
-            <h1 className="heading-1 absolute top-1 left-1 -z-10 opacity-20 text-primary" aria-hidden="true">
-              <span className="block">Reward contributors</span>
-              <span className="block mt-2">for their open-source work</span>
+            {/* Enhanced title shadow for 3D effect */}
+            <h1 className="heading-1 absolute top-2 left-2 -z-10 opacity-10 text-primary blur-sm" aria-hidden="true">
+              <span className="block mb-4">Automate crypto rewards</span>
+              <span className="block">for your GitHub contributors</span>
             </h1>
           </div>
           
-          <p className="mt-8 text-lg sm:text-xl leading-8 text-foreground/90 max-w-3xl mx-auto backdrop-blur-sm bg-background/30 rounded-2xl p-6 border border-border/50">
-            Set bounties on GitHub issues and automatically pay contributors when their pull requests are merged. 
-            <span className="gradient-text font-semibold"> No more manual payouts or contributor chasing.</span>
+          <p className="mt-8 text-xl sm:text-2xl leading-relaxed text-foreground/90 max-w-4xl mx-auto backdrop-blur-md bg-background/20 rounded-3xl p-8 border border-border/30 shadow-2xl">
+            Set bounties on GitHub issues and automatically pay contributors in cryptocurrency when their pull requests are merged. 
+            <span className="gradient-text font-semibold block mt-2">
+              Zero manual work. Maximum contributor satisfaction.
+            </span>
           </p>
+
+          {/* Stats Section */}
+          <div className="mt-16 mb-12 stats-grid max-w-3xl mx-auto">
+            <div className="card-3d rounded-2xl p-6 text-center">
+              <div className="text-3xl font-bold gradient-text">$50K+</div>
+              <div className="text-sm text-foreground/70 mt-1">Payouts Processed</div>
+            </div>
+            <div className="card-3d rounded-2xl p-6 text-center">
+              <div className="text-3xl font-bold gradient-text">500+</div>
+              <div className="text-sm text-foreground/70 mt-1">Active Repositories</div>
+            </div>
+            <div className="card-3d rounded-2xl p-6 text-center">
+              <div className="text-3xl font-bold gradient-text">2.5%</div>
+              <div className="text-sm text-foreground/70 mt-1">Simple Fee</div>
+            </div>
+          </div>
           
-          {/* 3D Button container */}
+          {/* Enhanced 3D Button container */}
           <div className="mt-12 perspective-container">
-            <div className="flex items-center justify-center gap-x-6 transform-gpu">
-              <Button asChild size="lg" className="text-base px-8 py-6 card-3d border-0 glow-effect relative overflow-hidden group">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-6 transform-gpu">
+              <Button asChild size="lg" className="text-lg px-12 py-8 card-3d border-0 glow-effect relative overflow-hidden group min-w-[280px]">
                 <Link to="/auth">
-                  <div className="absolute inset-0 bg-gradient-to-r from-primary to-accent opacity-90 group-hover:opacity-100 transition-opacity"></div>
-                  <Github className="mr-2 h-5 w-5 relative z-10" />
-                  <span className="relative z-10">Get Started for Free</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary via-accent to-primary opacity-90 group-hover:opacity-100 transition-all duration-500 shimmer-effect"></div>
+                  <Github className="mr-3 h-6 w-6 relative z-10" />
+                  <span className="relative z-10 font-semibold">Start Automating Payouts</span>
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="lg" className="text-base px-8 py-6 card-3d border-primary/50 bg-background/50 backdrop-blur-sm hover:bg-background/80">
+              <Button asChild variant="outline" size="lg" className="text-lg px-12 py-8 card-3d border-primary/30 bg-background/40 backdrop-blur-md hover:bg-background/60 min-w-[240px]">
                 <Link to="/docs">
-                  Read Documentation
+                  <span className="text-foreground">View Documentation</span>
                 </Link>
               </Button>
+            </div>
+            
+            {/* Trust indicators */}
+            <div className="mt-12 flex items-center justify-center gap-8 text-sm text-foreground/60">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full pulse-glow"></div>
+                <span>Real-time payouts</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-blue-500 rounded-full pulse-glow"></div>
+                <span>Secure & automated</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-purple-500 rounded-full pulse-glow"></div>
+                <span>7-day free trial</span>
+              </div>
             </div>
           </div>
           

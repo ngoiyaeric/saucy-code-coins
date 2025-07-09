@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import {
   Card,
   CardContent,
@@ -15,6 +16,7 @@ import { Repository, Payout } from "@/types";
 import Navbar from "@/components/Navbar";
 import { CreditCard, Github, BarChart2, Building2, Users } from "lucide-react";
 import { GitHubService, GitHubOrganization, GitHubRepository } from "@/services/githubService";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const Dashboard = () => {
@@ -27,6 +29,8 @@ const Dashboard = () => {
     organizations: GitHubOrganization[];
   } | null>(null);
   const [loadingGithub, setLoadingGithub] = useState(false);
+  const [enabledRepos, setEnabledRepos] = useState<Record<string, boolean>>({});
+  const [toggleLoading, setToggleLoading] = useState<Set<string>>(new Set());
 
   // Mock data loading - in a real app, this would use the actual API client
   useEffect(() => {
@@ -45,12 +49,93 @@ const Dashboard = () => {
     try {
       const data = await GitHubService.getAllAccessibleRepositories();
       setGithubData(data);
+      
+      // Fetch enabled repositories from Supabase
+      const { data: enabledData, error } = await supabase
+        .from('enabled_repositories')
+        .select('repository_id, enabled');
+      
+      if (!error && enabledData) {
+        const enabledMap: Record<string, boolean> = {};
+        enabledData.forEach(repo => {
+          enabledMap[repo.repository_id] = repo.enabled;
+        });
+        setEnabledRepos(enabledMap);
+      }
+      
       toast.success('GitHub data loaded successfully');
     } catch (error) {
       console.error('Error fetching GitHub data:', error);
       toast.error('Failed to load GitHub data. Please check your permissions.');
     } finally {
       setLoadingGithub(false);
+    }
+  };
+
+  const toggleRepository = async (repo: GitHubRepository) => {
+    const repoId = repo.id.toString();
+    setToggleLoading(prev => new Set(prev).add(repoId));
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('Please sign in to manage repositories');
+        return;
+      }
+
+      const isCurrentlyEnabled = enabledRepos[repoId] || false;
+      const newEnabledState = !isCurrentlyEnabled;
+
+      if (newEnabledState) {
+        // Add to enabled repositories
+        const { error } = await supabase
+          .from('enabled_repositories')
+          .upsert({
+            repository_id: repoId,
+            user_id: user.id,
+            repository_name: repo.name,
+            repository_full_name: repo.full_name,
+            repository_description: repo.description,
+            repository_language: repo.language,
+            stargazers_count: repo.stargazers_count,
+            enabled: true
+          });
+
+        if (error) {
+          console.error('Error enabling repository:', error);
+          toast.error('Failed to enable repository');
+          return;
+        }
+      } else {
+        // Remove from enabled repositories
+        const { error } = await supabase
+          .from('enabled_repositories')
+          .update({ enabled: false })
+          .eq('repository_id', repoId)
+          .eq('user_id', user.id);
+
+        if (error) {
+          console.error('Error disabling repository:', error);
+          toast.error('Failed to disable repository');
+          return;
+        }
+      }
+
+      setEnabledRepos(prev => ({
+        ...prev,
+        [repoId]: newEnabledState
+      }));
+
+      toast.success(`Repository ${newEnabledState ? 'enabled' : 'disabled'} successfully`);
+    } catch (error) {
+      console.error('Error toggling repository:', error);
+      toast.error('Failed to update repository status');
+    } finally {
+      setToggleLoading(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(repoId);
+        return newSet;
+      });
     }
   };
 
@@ -180,27 +265,59 @@ const Dashboard = () => {
               <div className="mb-6">
                 <h3 className="text-lg font-semibold mb-4">Personal Repositories ({githubData.userRepos.length})</h3>
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {githubData.userRepos.slice(0, 6).map((repo) => (
-                    <Card key={repo.id}>
-                      <CardHeader>
-                        <CardTitle className="text-sm">{repo.name}</CardTitle>
-                        <CardDescription className="text-xs">{repo.description || 'No description'}</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="flex justify-between text-xs">
-                          <span>Language: {repo.language || 'N/A'}</span>
-                          <span>Stars: {repo.stargazers_count}</span>
-                        </div>
-                      </CardContent>
-                      <CardFooter>
-                        <Button variant="outline" size="sm" asChild>
-                          <a href={repo.html_url} target="_blank" rel="noopener noreferrer">
-                            View on GitHub
-                          </a>
-                        </Button>
-                      </CardFooter>
-                    </Card>
-                  ))}
+                  {githubData.userRepos.slice(0, 12).map((repo) => {
+                    const repoId = repo.id.toString();
+                    const isEnabled = enabledRepos[repoId] || false;
+                    const isToggling = toggleLoading.has(repoId);
+                    
+                    return (
+                      <Card key={repo.id} className={`card-3d ${isEnabled ? 'ring-2 ring-primary/20' : ''}`}>
+                        <CardHeader>
+                          <div className="flex items-start justify-between">
+                            <div className="space-y-1">
+                              <CardTitle className="text-sm">{repo.name}</CardTitle>
+                              <CardDescription className="text-xs">{repo.description || 'No description'}</CardDescription>
+                            </div>
+                            <Switch
+                              checked={isEnabled}
+                              onCheckedChange={() => toggleRepository(repo)}
+                              disabled={isToggling}
+                              className="ml-2"
+                            />
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="flex justify-between text-xs mb-2">
+                            <span>Language: {repo.language || 'N/A'}</span>
+                            <span>⭐ {repo.stargazers_count}</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className={`text-xs px-2 py-1 rounded ${
+                              isEnabled 
+                                ? 'bg-green-100 text-green-800' 
+                                : 'bg-gray-100 text-gray-800'
+                            }`}>
+                              {isEnabled ? 'Enabled' : 'Disabled'}
+                            </span>
+                          </div>
+                        </CardContent>
+                        <CardFooter className="flex justify-between">
+                          <Button variant="outline" size="sm" asChild>
+                            <a href={repo.html_url} target="_blank" rel="noopener noreferrer">
+                              View on GitHub
+                            </a>
+                          </Button>
+                          {isEnabled && (
+                            <Button size="sm" asChild>
+                              <Link to={`/repositories/${repoId}/issues`}>
+                                Manage Issues
+                              </Link>
+                            </Button>
+                          )}
+                        </CardFooter>
+                      </Card>
+                    );
+                  })}
                 </div>
               </div>
             )}

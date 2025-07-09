@@ -9,6 +9,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
+import RepositoryIssues from "./pages/RepositoryIssues";
 import NotFound from "./pages/NotFound";
 import Pricing from "./pages/Pricing";
 import Auth from "./pages/Auth";
@@ -46,6 +47,14 @@ const App = () => {
                   element={
                     <ProtectedRoute>
                       <Dashboard />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/repositories/:repositoryId/issues" 
+                  element={
+                    <ProtectedRoute>
+                      <RepositoryIssues />
                     </ProtectedRoute>
                   } 
                 />

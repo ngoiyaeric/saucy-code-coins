@@ -92,6 +92,48 @@ export type Database = {
         }
         Relationships: []
       }
+      enabled_repositories: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          id: string
+          repository_description: string | null
+          repository_full_name: string
+          repository_id: string
+          repository_language: string | null
+          repository_name: string
+          stargazers_count: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          repository_description?: string | null
+          repository_full_name: string
+          repository_id: string
+          repository_language?: string | null
+          repository_name: string
+          stargazers_count?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          repository_description?: string | null
+          repository_full_name?: string
+          repository_id?: string
+          repository_language?: string | null
+          repository_name?: string
+          stargazers_count?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       github_auth: {
         Row: {
           access_token: string

@@ -78,6 +78,12 @@ export interface GitHubIssue {
   };
 }
 
+export interface RepositoryIssuesResult {
+  issues: GitHubIssue[];
+  error?: string;
+  hasError: boolean;
+}
+
 export interface BountyAssignment {
   issueId: number;
   suggestedAmount: number;
@@ -159,17 +165,20 @@ export class GitHubService {
       }
       
       // Filter out PRs and ensure we have valid issue objects
-      return issues.filter((issue: any) => {
+      const validIssues = issues.filter((issue: any) => {
         if (!issue || typeof issue !== 'object') {
           console.warn('Invalid issue object:', issue);
           return false;
         }
         return !issue.pull_request; // Filter out PRs
       });
+      
+      console.log(`Repository ${repoFullName} has ${validIssues.length} valid issues`);
+      return validIssues;
     } catch (error) {
       console.error(`Error fetching issues for repository ${repoFullName}:`, error);
-      // Return empty array instead of throwing to allow parsing to continue
-      return [];
+      // Don't silently return empty array - throw the error to be handled upstream
+      throw error;
     }
   }
 
@@ -275,12 +284,17 @@ export class GitHubService {
     repository: GitHubRepository;
     issues: GitHubIssue[];
     bountyAssignments: BountyAssignment[];
+    hasError?: boolean;
+    errorMessage?: string;
   }>> {
     const results = [];
     
-    for (const repo of repositories.slice(0, 5)) { // Limit to first 5 repos to avoid rate limits
+    for (const repo of repositories.slice(0, 10)) { // Increased from 5 to 10 repos
       try {
+        console.log(`Processing repository: ${repo.full_name}`);
         const issues = await this.getRepositoryIssues(repo.full_name);
+        console.log(`Found ${issues.length} issues for ${repo.full_name}`);
+        
         const bountyAssignments = await Promise.all(
           issues.map(issue => this.analyzeBountyValue(issue))
         );
@@ -288,13 +302,23 @@ export class GitHubService {
         results.push({
           repository: repo,
           issues,
-          bountyAssignments
+          bountyAssignments,
+          hasError: false
         });
       } catch (error) {
-        console.warn(`Failed to process repository ${repo.full_name}:`, error);
+        console.error(`Failed to process repository ${repo.full_name}:`, error);
+        // Still include the repo but mark it as having an error
+        results.push({
+          repository: repo,
+          issues: [],
+          bountyAssignments: [],
+          hasError: true,
+          errorMessage: error instanceof Error ? error.message : 'Unknown error'
+        });
       }
     }
     
+    console.log(`Processed ${results.length} repositories total`);
     return results;
   }
 }

@@ -151,10 +151,25 @@ export class GitHubService {
         `https://api.github.com/repos/${repoFullName}/issues?state=${state}&per_page=100`
       );
       console.log(`Repository ${repoFullName} issues:`, issues);
-      return issues.filter((issue: any) => !issue.pull_request); // Filter out PRs
+      
+      // Ensure issues is an array before filtering
+      if (!Array.isArray(issues)) {
+        console.warn(`Expected array of issues for ${repoFullName}, got:`, typeof issues);
+        return [];
+      }
+      
+      // Filter out PRs and ensure we have valid issue objects
+      return issues.filter((issue: any) => {
+        if (!issue || typeof issue !== 'object') {
+          console.warn('Invalid issue object:', issue);
+          return false;
+        }
+        return !issue.pull_request; // Filter out PRs
+      });
     } catch (error) {
       console.error(`Error fetching issues for repository ${repoFullName}:`, error);
-      throw error;
+      // Return empty array instead of throwing to allow parsing to continue
+      return [];
     }
   }
 

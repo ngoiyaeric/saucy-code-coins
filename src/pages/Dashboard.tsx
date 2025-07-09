@@ -32,17 +32,70 @@ const Dashboard = () => {
   const [enabledRepos, setEnabledRepos] = useState<Record<string, boolean>>({});
   const [toggleLoading, setToggleLoading] = useState<Set<string>>(new Set());
 
-  // Mock data loading - in a real app, this would use the actual API client
+  // Load real data - no more dummy data
   useEffect(() => {
-    // Simulate API call delay
-    const timer = setTimeout(() => {
-      setRepositories(mockApi.repositories);
-      setPayouts(mockApi.payouts);
-      setIsLoading(false);
-    }, 500);
-
-    return () => clearTimeout(timer);
+    loadDashboardData();
   }, []);
+
+  const loadDashboardData = async () => {
+    setIsLoading(true);
+    try {
+      // Load real payouts from database and transform to match Payout interface
+      const { data: payoutsData, error: payoutsError } = await supabase
+        .from('payouts')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (payoutsError) {
+        console.error('Error loading payouts:', payoutsError);
+      } else {
+        const transformedPayouts = (payoutsData || []).map(payout => ({
+          id: payout.id,
+          repositoryId: payout.repository_id,
+          repositoryName: payout.repository_name,
+          pullRequestId: payout.pull_request_id,
+          pullRequestNumber: payout.pull_request_number,
+          contributorId: payout.contributor_id,
+          contributorName: payout.contributor_name,
+          amount: Number(payout.amount),
+          currency: payout.currency,
+          status: payout.status as "pending" | "claimed" | "paid" | "failed",
+          createdAt: payout.created_at,
+          updatedAt: payout.updated_at
+        }));
+        setPayouts(transformedPayouts);
+      }
+
+      // Load enabled repositories and transform to match Repository interface
+      const { data: reposData, error: reposError } = await supabase
+        .from('enabled_repositories')
+        .select('*')
+        .eq('enabled', true)
+        .order('created_at', { ascending: false });
+
+      if (reposError) {
+        console.error('Error loading repositories:', reposError);
+      } else {
+        const transformedRepos = (reposData || []).map(repo => ({
+          id: repo.repository_id,
+          name: repo.repository_name,
+          owner: repo.repository_full_name.split('/')[0],
+          description: repo.repository_description || '',
+          enabled: repo.enabled,
+          totalPaid: 0, // Will be calculated from actual payouts
+          pendingPayouts: 0, // Will be calculated from pending payouts
+          createdAt: repo.created_at,
+          updatedAt: repo.updated_at
+        }));
+        setRepositories(transformedRepos);
+      }
+    } catch (error) {
+      console.error('Error loading dashboard data:', error);
+      toast.error('Failed to load dashboard data');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const fetchGitHubData = async () => {
     setLoadingGithub(true);

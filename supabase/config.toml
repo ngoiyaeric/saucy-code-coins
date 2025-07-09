@@ -1,1 +1,77 @@
 project_id = "xjmqdtphofzcckqnniei"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[db.pooler]
+enabled = false
+port = 54329
+pool_mode = "transaction"
+default_pool_size = 20
+max_client_conn = 100
+
+[realtime]
+enabled = true
+port = 54323
+ip_version = "ipv4"
+
+[studio]
+enabled = true
+port = 54323
+api_url = "http://127.0.0.1:54321"
+openai_api_key = "env(OPENAI_API_KEY)"
+
+[inbucket]
+enabled = true
+port = 54324
+smtp_port = 54325
+pop3_port = 54326
+
+[storage]
+enabled = true
+port = 54321
+file_size_limit = "50MiB"
+feature_image_transformation = true
+
+[auth]
+enabled = true
+port = 54321
+site_url = "http://127.0.0.1:3000"
+additional_redirect_urls = ["https://xjmqdtphofzcckqnniei.supabase.co"]
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+refresh_token_reuse_interval = 10
+enable_manual_linking = false
+
+[auth.external.github]
+enabled = true
+client_id = "env(GITHUB_CLIENT_ID)"
+secret = "env(GITHUB_CLIENT_SECRET)"
+redirect_uri = "http://127.0.0.1:54321/auth/v1/callback"
+url = "https://github.com/login/oauth/authorize"
+
+[edge_runtime]
+enabled = true
+port = 54321
+ip_version = "ipv4"
+
+[analytics]
+enabled = true
+port = 54327
+vector_port = 54328
+backend = "postgres"
+
+[functions.coinbase-payout]
+verify_jwt = true
+
+[functions.trigger-payout]
+verify_jwt = false

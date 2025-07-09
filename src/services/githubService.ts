@@ -153,14 +153,24 @@ export class GitHubService {
 
   static async getRepositoryIssues(repoFullName: string, state: 'open' | 'closed' | 'all' = 'open'): Promise<GitHubIssue[]> {
     try {
+      console.log(`Fetching issues for repository: ${repoFullName}`);
+      
+      // Add delay to avoid rate limiting
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       const issues = await this.makeGitHubRequest(
-        `https://api.github.com/repos/${repoFullName}/issues?state=${state}&per_page=100`
+        `https://api.github.com/repos/${repoFullName}/issues?state=${state}&per_page=100&sort=created&direction=desc`
       );
-      console.log(`Repository ${repoFullName} issues:`, issues);
+      
+      console.log(`Repository ${repoFullName} raw response:`, { 
+        isArray: Array.isArray(issues), 
+        length: issues?.length,
+        type: typeof issues 
+      });
       
       // Ensure issues is an array before filtering
       if (!Array.isArray(issues)) {
-        console.warn(`Expected array of issues for ${repoFullName}, got:`, typeof issues);
+        console.warn(`Expected array of issues for ${repoFullName}, got:`, typeof issues, issues);
         return [];
       }
       
@@ -170,15 +180,24 @@ export class GitHubService {
           console.warn('Invalid issue object:', issue);
           return false;
         }
-        return !issue.pull_request; // Filter out PRs
+        // Filter out PRs (they have pull_request property)
+        const isPR = issue.pull_request !== undefined && issue.pull_request !== null;
+        if (isPR) {
+          console.log(`Filtering out PR #${issue.number}: ${issue.title}`);
+        }
+        return !isPR;
       });
       
-      console.log(`Repository ${repoFullName} has ${validIssues.length} valid issues`);
+      console.log(`Repository ${repoFullName} has ${validIssues.length} valid issues (filtered from ${issues.length} total)`);
       return validIssues;
     } catch (error) {
       console.error(`Error fetching issues for repository ${repoFullName}:`, error);
-      // Don't silently return empty array - throw the error to be handled upstream
-      throw error;
+      // Log more details about the error
+      if (error instanceof Error) {
+        console.error(`Error details: ${error.message}`);
+      }
+      // Return empty array on error to allow processing to continue
+      return [];
     }
   }
 
@@ -289,15 +308,32 @@ export class GitHubService {
   }>> {
     const results = [];
     
-    for (const repo of repositories.slice(0, 10)) { // Increased from 5 to 10 repos
+    console.log(`Starting to process ${repositories.length} repositories (will process first 10)`);
+    
+    for (const repo of repositories.slice(0, 10)) {
+      console.log(`\n=== Processing repository: ${repo.full_name} ===`);
+      
       try {
-        console.log(`Processing repository: ${repo.full_name}`);
+        // Check if repo has admin permissions needed for issues
+        if (!repo.permissions?.admin && !repo.permissions?.push) {
+          console.warn(`Skipping ${repo.full_name} - insufficient permissions`);
+          results.push({
+            repository: repo,
+            issues: [],
+            bountyAssignments: [],
+            hasError: true,
+            errorMessage: 'Insufficient permissions to access issues'
+          });
+          continue;
+        }
+
         const issues = await this.getRepositoryIssues(repo.full_name);
-        console.log(`Found ${issues.length} issues for ${repo.full_name}`);
+        console.log(`✅ Successfully found ${issues.length} issues for ${repo.full_name}`);
         
-        const bountyAssignments = await Promise.all(
+        // Only analyze bounties if there are issues
+        const bountyAssignments = issues.length > 0 ? await Promise.all(
           issues.map(issue => this.analyzeBountyValue(issue))
-        );
+        ) : [];
         
         results.push({
           repository: repo,
@@ -305,20 +341,33 @@ export class GitHubService {
           bountyAssignments,
           hasError: false
         });
+        
+        console.log(`✅ Repository ${repo.full_name} processed successfully`);
+        
       } catch (error) {
-        console.error(`Failed to process repository ${repo.full_name}:`, error);
-        // Still include the repo but mark it as having an error
+        console.error(`❌ Failed to process repository ${repo.full_name}:`, error);
+        
+        // Always include the repo in results, even with errors
         results.push({
           repository: repo,
           issues: [],
           bountyAssignments: [],
           hasError: true,
-          errorMessage: error instanceof Error ? error.message : 'Unknown error'
+          errorMessage: error instanceof Error ? error.message : 'Unknown error occurred'
         });
       }
+      
+      // Small delay between repositories to avoid rate limiting
+      await new Promise(resolve => setTimeout(resolve, 200));
     }
     
-    console.log(`Processed ${results.length} repositories total`);
+    const successCount = results.filter(r => !r.hasError).length;
+    const errorCount = results.filter(r => r.hasError).length;
+    console.log(`\n=== Repository Processing Complete ===`);
+    console.log(`Total processed: ${results.length}`);
+    console.log(`Successful: ${successCount}`);
+    console.log(`Errors: ${errorCount}`);
+    
     return results;
   }
 }

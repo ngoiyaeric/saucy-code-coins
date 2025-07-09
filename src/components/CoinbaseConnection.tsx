@@ -52,34 +52,67 @@ const CoinbaseConnection = () => {
   };
 
   const handleCoinbaseConnect = async () => {
-    if (!user) return;
+    if (!user) {
+      toast.error('Please sign in with GitHub first');
+      return;
+    }
 
     setIsLoading(true);
     try {
-      // Using generic client ID for now - will be replaced with actual Coinbase credentials
-      const clientId = 'generic-coinbase-client-id';
+      // Get GitHub user info to connect with Coinbase
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.provider_token) {
+        toast.error('GitHub connection required for Coinbase integration');
+        setIsLoading(false);
+        return;
+      }
+
+      // Using real Coinbase OAuth flow
+      const clientId = 'your-coinbase-client-id'; // This should be set via secrets
       const redirectUri = `${window.location.origin}/functions/v1/coinbase-oauth`;
-      const state = user.id; // Pass user ID as state
+      const state = JSON.stringify({
+        userId: user.id,
+        githubToken: session.provider_token,
+        timestamp: Date.now()
+      });
       
       const authUrl = `https://www.coinbase.com/oauth/authorize?` +
         `response_type=code&` +
         `client_id=${clientId}&` +
         `redirect_uri=${encodeURIComponent(redirectUri)}&` +
-        `state=${state}&` +
-        `scope=wallet:accounts:read,wallet:transactions:send`;
+        `state=${encodeURIComponent(state)}&` +
+        `scope=wallet:accounts:read,wallet:transactions:send,wallet:deposits:create`;
 
-      // For now, simulate connection since we're using generic keys
-      toast.info('Using generic Coinbase connection for development');
+      // For development: simulate connection if using generic client ID
+      if (clientId === 'your-coinbase-client-id') {
+        toast.info('Development mode: Simulating Coinbase connection');
+        
+        // Create a mock Coinbase auth record
+        const { error } = await supabase
+          .from('coinbase_auth')
+          .upsert({
+            user_id: user.id,
+            access_token: 'dev-mock-access-token',
+            refresh_token: 'dev-mock-refresh-token',
+            expires_at: new Date(Date.now() + 3600 * 1000).toISOString(),
+          });
+
+        if (error) {
+          console.error('Error creating mock Coinbase auth:', error);
+          toast.error('Failed to simulate Coinbase connection');
+        } else {
+          setTimeout(() => {
+            setIsConnected(true);
+            setIsLoading(false);
+            toast.success('Coinbase connected (development mode)');
+          }, 2000);
+        }
+        return;
+      }
+
+      // Redirect to actual Coinbase OAuth
+      window.location.href = authUrl;
       
-      // Simulate successful connection after a short delay
-      setTimeout(() => {
-        setIsConnected(true);
-        setIsLoading(false);
-        toast.success('Coinbase connected (development mode)');
-      }, 2000);
-
-      // Uncomment this line when you have real Coinbase credentials:
-      // window.location.href = authUrl;
     } catch (error) {
       console.error('Error connecting to Coinbase:', error);
       toast.error('Failed to connect to Coinbase');

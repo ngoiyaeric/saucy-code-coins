@@ -54,9 +54,9 @@ const BountyManager: React.FC<BountyManagerProps> = ({
         return;
       }
 
-      // Create bounty record in database
+      // Create bounty record in database  
       const { error } = await supabase
-        .from('bounties')
+        .from('bounties' as any)
         .insert({
           repository_id: repository.id.toString(),
           repository_name: repository.full_name,

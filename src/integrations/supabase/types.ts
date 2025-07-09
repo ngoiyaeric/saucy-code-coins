@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      bounties: {
+        Row: {
+          amount: number
+          complexity: string
+          created_at: string
+          creator_id: string
+          currency: string
+          id: string
+          issue_id: string
+          issue_number: number
+          issue_title: string
+          repository_id: string
+          repository_name: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          complexity?: string
+          created_at?: string
+          creator_id: string
+          currency?: string
+          id?: string
+          issue_id: string
+          issue_number: number
+          issue_title: string
+          repository_id: string
+          repository_name: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          complexity?: string
+          created_at?: string
+          creator_id?: string
+          currency?: string
+          id?: string
+          issue_id?: string
+          issue_number?: number
+          issue_title?: string
+          repository_id?: string
+          repository_name?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       coinbase_auth: {
         Row: {
           access_token: string

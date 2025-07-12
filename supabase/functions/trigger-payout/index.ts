@@ -72,10 +72,23 @@ serve(async (req) => {
 
     console.log(`Found ${bounties.length} active bounties for repository`);
 
-    // For now, we'll trigger payout for the first active bounty
-    // In a real implementation, you'd want to parse the PR description 
-    // to find which specific issue it fixes (e.g., "Fixes #123")
-    const bounty = bounties[0];
+    // Extract issue numbers from PR body and title
+    const issueNumbers = extractIssueNumbers(payload.pull_request.title + ' ' + payload.pull_request.body);
+    
+    // Find bounties for the specific issues linked to this PR
+    const linkedBounties = bounties.filter(bounty => 
+      issueNumbers.includes(bounty.issue_number)
+    );
+
+    if (linkedBounties.length === 0) {
+      return new Response(
+        JSON.stringify({ message: 'No bounties found for issues linked to this PR' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Process the first linked bounty (could be extended to handle multiple)
+    const bounty = linkedBounties[0];
 
     // Get contributor's GitHub user ID (this would be used to match with our user system)
     const contributorGithubId = payload.pull_request.user.id.toString();
@@ -139,3 +152,16 @@ serve(async (req) => {
     );
   }
 });
+
+function extractIssueNumbers(text: string): number[] {
+  if (!text) return [];
+  
+  const regex = /#(\d+)|fixes?\s+#(\d+)|closes?\s+#(\d+)|resolves?\s+#(\d+)/gi;
+  const matches = text.match(regex);
+  if (!matches) return [];
+  
+  return matches.map(match => {
+    const numberMatch = match.match(/\d+/);
+    return numberMatch ? parseInt(numberMatch[0]) : 0;
+  }).filter(num => num > 0);
+}

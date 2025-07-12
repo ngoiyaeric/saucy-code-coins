@@ -70,8 +70,26 @@ port = 54327
 vector_port = 54328
 backend = "postgres"
 
+[functions.github-webhook]
+verify_jwt = false
+
+[functions.coinbase-oauth]
+verify_jwt = false
+
 [functions.coinbase-payout]
 verify_jwt = true
 
 [functions.trigger-payout]
 verify_jwt = false
+
+[functions.payout-webhook]
+verify_jwt = false
+
+[functions.send-crypto]
+verify_jwt = true
+
+[functions.analyze-issue-complexity]
+verify_jwt = false
+
+[functions.verify-pr]
+verify_jwt = true

@@ -45,46 +45,40 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Get Coinbase access token for the user who created the bounty
-    const { data: bountyData, error: bountyError } = await supabase
-      .from('bounties')
-      .select('creator_id')
+    // Check if payout already exists
+    const { data: existingPayout, error: payoutCheckError } = await supabase
+      .from('payouts')
+      .select('*')
       .eq('id', bountyId)
       .single();
 
-    if (bountyError || !bountyData) {
-      throw new Error('Bounty not found');
+    if (payoutCheckError || !existingPayout) {
+      throw new Error('Payout not found');
     }
 
+    if (existingPayout.status === 'completed') {
+      throw new Error('Payout already completed');
+    }
+
+    // Get Coinbase access token for the contributor (payout recipient)
     const { data: coinbaseAuth, error: authError } = await supabase
       .from('coinbase_auth')
       .select('access_token')
-      .eq('user_id', bountyData.creator_id)
+      .eq('user_id', contributorId)
       .single();
 
     if (authError || !coinbaseAuth) {
-      throw new Error('Coinbase authentication not found for bounty creator');
+      throw new Error('Coinbase authentication not found for contributor');
     }
 
-    // Create payout record
-    const { data: payout, error: payoutError } = await supabase
+    // Update payout status to processing
+    const { error: updateError } = await supabase
       .from('payouts')
-      .insert({
-        contributor_id: contributorId,
-        contributor_name: contributorName,
-        amount,
-        currency,
-        pull_request_id: pullRequestId,
-        pull_request_number: pullRequestNumber,
-        repository_id: repositoryId,
-        repository_name: repositoryName,
-        status: 'pending'
-      })
-      .select()
-      .single();
+      .update({ status: 'processing' })
+      .eq('id', bountyId);
 
-    if (payoutError || !payout) {
-      throw new Error('Failed to create payout record');
+    if (updateError) {
+      throw new Error('Failed to update payout status');
     }
 
     // Initiate Coinbase transfer
@@ -115,7 +109,7 @@ serve(async (req) => {
       await supabase
         .from('payouts')
         .update({ status: 'failed' })
-        .eq('id', payout.id);
+        .eq('id', bountyId);
 
       throw new Error(`Coinbase API error: ${coinbaseResult.errors?.[0]?.message || 'Unknown error'}`);
     }
@@ -124,7 +118,7 @@ serve(async (req) => {
     const { error: transactionError } = await supabase
       .from('transactions')
       .insert({
-        payout_id: payout.id,
+        payout_id: bountyId,
         amount,
         currency,
         coinbase_transaction_id: coinbaseResult.data.id,
@@ -139,20 +133,29 @@ serve(async (req) => {
     await supabase
       .from('payouts')
       .update({ status: 'completed' })
-      .eq('id', payout.id);
-
-    // Update bounty status to paid
-    await supabase
-      .from('bounties')
-      .update({ status: 'paid' })
       .eq('id', bountyId);
+
+    // Find and update the related bounty status to paid
+    const { data: relatedBounty } = await supabase
+      .from('bounties')
+      .select('id')
+      .eq('repository_name', repositoryName)
+      .eq('issue_number', existingPayout.pull_request_number)
+      .single();
+
+    if (relatedBounty) {
+      await supabase
+        .from('bounties')
+        .update({ status: 'paid' })
+        .eq('id', relatedBounty.id);
+    }
 
     console.log(`Payout completed: ${amount} ${currency} to ${contributorEmail}`);
 
     return new Response(
       JSON.stringify({
         success: true,
-        payoutId: payout.id,
+        payoutId: bountyId,
         transactionId: coinbaseResult.data.id,
         message: 'Payout completed successfully'
       }),

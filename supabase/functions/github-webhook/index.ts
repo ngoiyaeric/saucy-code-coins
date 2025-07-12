@@ -36,9 +36,9 @@ serve(async (req) => {
         // Create payout entries for each linked issue
         for (const issueNumber of issueNumbers) {
           // Check if this issue has a bounty
-          const bountyAmount = await getBountyAmount(repository.full_name, issueNumber);
+          const bountyData = await getBountyAmount(supabaseClient, repository.full_name, issueNumber);
           
-          if (bountyAmount > 0) {
+          if (bountyData) {
             const { error } = await supabaseClient
               .from('payouts')
               .insert({
@@ -48,9 +48,9 @@ serve(async (req) => {
                 pull_request_number: pr.number,
                 contributor_id: pr.user.id.toString(),
                 contributor_name: pr.user.login,
-                amount: bountyAmount,
+                amount: bountyData.amount,
                 currency: 'USD',
-                status: 'pending'
+                status: 'pending_claim'
               });
 
             if (error) {
@@ -58,8 +58,14 @@ serve(async (req) => {
             } else {
               console.log(`Payout created for PR #${pr.number}, issue #${issueNumber}`);
               
+              // Update bounty status to pending_payout
+              await supabaseClient
+                .from('bounties')
+                .update({ status: 'pending_payout' })
+                .eq('id', bountyData.bountyId);
+              
               // Post comment on PR with claim link
-              await postClaimComment(repository.full_name, pr.number, bountyAmount);
+              await postClaimComment(repository.full_name, pr.number, bountyData.amount);
             }
           }
         }
@@ -89,10 +95,22 @@ function extractIssueNumbers(text: string): number[] {
   }).filter(num => num > 0);
 }
 
-async function getBountyAmount(repoFullName: string, issueNumber: number): Promise<number> {
-  // This would typically check GitHub issue labels or a database
-  // For now, return a mock amount
-  return 50; // $50 bounty
+async function getBountyAmount(supabaseClient: any, repoFullName: string, issueNumber: number): Promise<{ amount: number; bountyId: string } | null> {
+  // Check if there's an active bounty for this specific issue
+  const { data: bounty, error } = await supabaseClient
+    .from('bounties')
+    .select('id, amount, currency')
+    .eq('repository_name', repoFullName)
+    .eq('issue_number', issueNumber)
+    .eq('status', 'active')
+    .single();
+
+  if (error || !bounty) {
+    console.log(`No active bounty found for issue #${issueNumber} in ${repoFullName}`);
+    return null;
+  }
+
+  return { amount: bounty.amount, bountyId: bounty.id };
 }
 
 async function postClaimComment(repoFullName: string, prNumber: number, amount: number) {

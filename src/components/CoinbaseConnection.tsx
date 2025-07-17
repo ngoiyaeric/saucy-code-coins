@@ -37,15 +37,27 @@ const CoinbaseConnection = () => {
     if (!user) return;
 
     try {
-      const { data, error } = await supabase
-        .from('coinbase_auth')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
+      // Check both Coinbase auth and GitHub auth to ensure proper linking
+      const [coinbaseAuthResult, githubAuthResult] = await Promise.all([
+        supabase.from('coinbase_auth').select('*').eq('user_id', user.id).single(),
+        supabase.from('github_auth').select('*').eq('user_id', user.id).single()
+      ]);
 
-      setIsConnected(!!data && !error);
+      const hasCoinbaseAuth = !!coinbaseAuthResult.data && !coinbaseAuthResult.error;
+      const hasGitHubAuth = !!githubAuthResult.data && !githubAuthResult.error;
+
+      if (hasCoinbaseAuth && hasGitHubAuth) {
+        setIsConnected(true);
+      } else if (hasCoinbaseAuth && !hasGitHubAuth) {
+        // User has Coinbase but not GitHub - this shouldn't happen in normal flow
+        console.warn('User has Coinbase auth but missing GitHub auth');
+        setIsConnected(false);
+      } else {
+        setIsConnected(false);
+      }
     } catch (error) {
       console.error('Error checking Coinbase connection:', error);
+      setIsConnected(false);
     } finally {
       setCheckingConnection(false);
     }

@@ -314,23 +314,11 @@ export class GitHubService {
       console.log(`\n=== Processing repository: ${repo.full_name} ===`);
       
       try {
-        // Check if repo has admin permissions needed for issues
-        if (!repo.permissions?.admin && !repo.permissions?.push) {
-          console.warn(`Skipping ${repo.full_name} - insufficient permissions`);
-          results.push({
-            repository: repo,
-            issues: [],
-            bountyAssignments: [],
-            hasError: true,
-            errorMessage: 'Insufficient permissions to access issues'
-          });
-          continue;
-        }
-
+        // Attempt to fetch issues regardless of permissions - GitHub API will handle access control
         const issues = await this.getRepositoryIssues(repo.full_name);
         console.log(`✅ Successfully found ${issues.length} issues for ${repo.full_name}`);
         
-        // Only analyze bounties if there are issues
+        // Always analyze bounties, even if there are no issues (to show the repo was processed)
         const bountyAssignments = issues.length > 0 ? await Promise.all(
           issues.map(issue => this.analyzeBountyValue(issue))
         ) : [];
@@ -342,7 +330,7 @@ export class GitHubService {
           hasError: false
         });
         
-        console.log(`✅ Repository ${repo.full_name} processed successfully`);
+        console.log(`✅ Repository ${repo.full_name} processed successfully with ${issues.length} issues`);
         
       } catch (error) {
         console.error(`❌ Failed to process repository ${repo.full_name}:`, error);

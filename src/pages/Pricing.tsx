@@ -10,7 +10,6 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Check } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { fetchPlans } from "@/lib/api";
 import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -30,7 +29,14 @@ const Pricing = () => {
   
   const { data: plans, isLoading, error } = useQuery({
     queryKey: ['plans'],
-    queryFn: fetchPlans,
+    queryFn: async () => {
+      const { data, error } = await supabase.from('plans').select('*').order('price_monthly');
+      if (error) throw error;
+      return data?.map(plan => ({
+        ...plan,
+        features: Array.isArray(plan.features) ? plan.features : []
+      })) as Plan[];
+    },
   });
   
   if (error) {

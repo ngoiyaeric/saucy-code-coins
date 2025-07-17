@@ -95,32 +95,6 @@ const CoinbaseConnection = () => {
         `state=${encodeURIComponent(state)}&` +
         `scope=wallet:accounts:read,wallet:transactions:send,wallet:deposits:create`;
 
-      // For development: simulate connection if using generic client ID
-      if (clientId === 'your-coinbase-client-id') {
-        toast.info('Development mode: Simulating Coinbase connection');
-        
-        // Create a mock Coinbase auth record
-        const { error } = await supabase
-          .from('coinbase_auth')
-          .upsert({
-            user_id: user.id,
-            access_token: 'dev-mock-access-token',
-            refresh_token: 'dev-mock-refresh-token',
-            expires_at: new Date(Date.now() + 3600 * 1000).toISOString(),
-          });
-
-        if (error) {
-          console.error('Error creating mock Coinbase auth:', error);
-          toast.error('Failed to simulate Coinbase connection');
-        } else {
-          setTimeout(() => {
-            setIsConnected(true);
-            setIsLoading(false);
-            toast.success('Coinbase connected (development mode)');
-          }, 2000);
-        }
-        return;
-      }
 
       // Redirect to actual Coinbase OAuth
       window.location.href = authUrl;
@@ -153,17 +127,12 @@ const CoinbaseConnection = () => {
           {isConnected && (
             <Badge variant="secondary" className="bg-green-100 text-green-800">
               <CheckCircle className="h-3 w-3 mr-1" />
-              Connected (Dev Mode)
+              Connected
             </Badge>
           )}
         </div>
         <CardDescription>
           Connect your Coinbase account to receive crypto payments for your contributions.
-          {!isConnected && (
-            <span className="block mt-2 text-amber-600">
-              Currently using development mode with generic keys.
-            </span>
-          )}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -174,14 +143,11 @@ const CoinbaseConnection = () => {
             className="w-full"
           >
             <Wallet className="mr-2 h-4 w-4" />
-            {isLoading ? 'Connecting...' : 'Connect Coinbase (Dev Mode)'}
+            {isLoading ? 'Connecting...' : 'Connect Coinbase'}
           </Button>
         ) : (
           <div className="text-center text-sm text-muted-foreground">
             Your Coinbase account is connected and ready to receive payments.
-            <div className="mt-2 text-amber-600">
-              Development mode - replace with real credentials for production.
-            </div>
           </div>
         )}
       </CardContent>

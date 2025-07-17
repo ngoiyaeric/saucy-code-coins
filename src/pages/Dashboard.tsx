@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { mockApi } from "@/lib/api";
+
 import { Repository, Payout } from "@/types";
 import Navbar from "@/components/Navbar";
 import { CreditCard, Github, BarChart2, Building2, Users } from "lucide-react";
@@ -31,8 +31,8 @@ const Dashboard = () => {
   const [loadingGithub, setLoadingGithub] = useState(false);
   const [enabledRepos, setEnabledRepos] = useState<Record<string, boolean>>({});
   const [toggleLoading, setToggleLoading] = useState<Set<string>>(new Set());
+  const [processingIssues, setProcessingIssues] = useState(false);
 
-  // Load real data - no more dummy data
   useEffect(() => {
     loadDashboardData();
   }, []);
@@ -122,6 +122,52 @@ const Dashboard = () => {
       toast.error('Failed to load GitHub data. Please check your permissions.');
     } finally {
       setLoadingGithub(false);
+    }
+  };
+
+  const processRepositoryIssues = async () => {
+    if (!githubData) {
+      toast.error('Please load GitHub data first');
+      return;
+    }
+
+    setProcessingIssues(true);
+    try {
+      // Get all enabled repositories
+      const enabledRepoIds = Object.keys(enabledRepos).filter(id => enabledRepos[id]);
+      const enabledRepositories = [...githubData.userRepos, ...Object.values(githubData.orgRepos).flat()]
+        .filter(repo => enabledRepoIds.includes(repo.id.toString()));
+
+      if (enabledRepositories.length === 0) {
+        toast.error('No enabled repositories found');
+        return;
+      }
+
+      console.log(`Processing ${enabledRepositories.length} enabled repositories for issue analysis`);
+      
+      // Process repositories with issues and bounty assignments
+      const results = await GitHubService.getRepositoriesWithIssuesAndBounties(enabledRepositories);
+      
+      // Log results for debugging
+      results.forEach(result => {
+        console.log(`Repository ${result.repository.full_name}:`, {
+          issues: result.issues.length,
+          bounties: result.bountyAssignments.length,
+          hasError: result.hasError,
+          errorMessage: result.errorMessage
+        });
+      });
+
+      const totalIssues = results.reduce((sum, r) => sum + r.issues.length, 0);
+      const totalBounties = results.reduce((sum, r) => sum + r.bountyAssignments.length, 0);
+      
+      toast.success(`Processed ${totalIssues} issues and assigned ${totalBounties} bounty values across ${enabledRepositories.length} repositories`);
+      
+    } catch (error) {
+      console.error('Error processing repository issues:', error);
+      toast.error('Failed to process repository issues');
+    } finally {
+      setProcessingIssues(false);
     }
   };
 
@@ -308,10 +354,19 @@ const Dashboard = () => {
           <TabsContent value="repositories" className="space-y-4">
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-bold">Your Repositories</h2>
-              <Button onClick={fetchGitHubData} disabled={loadingGithub}>
-                <Github className="mr-2 h-4 w-4" />
-                {loadingGithub ? 'Loading...' : 'Refresh from GitHub'}
-              </Button>
+              <div className="flex gap-2">
+                <Button onClick={fetchGitHubData} disabled={loadingGithub}>
+                  <Github className="mr-2 h-4 w-4" />
+                  {loadingGithub ? 'Loading...' : 'Refresh from GitHub'}
+                </Button>
+                <Button 
+                  onClick={processRepositoryIssues} 
+                  disabled={processingIssues || !githubData}
+                  variant="outline"
+                >
+                  {processingIssues ? 'Processing...' : 'Process Issues'}
+                </Button>
+              </div>
             </div>
 
             {githubData && (
@@ -594,7 +649,7 @@ const Dashboard = () => {
                   <div className="flex items-center justify-between p-3 border rounded-md">
                     <div className="flex items-center">
                       <Github className="h-5 w-5 mr-2" />
-                      <span>Connected as {mockApi.user.name}</span>
+                      <span>Connected via GitHub OAuth</span>
                     </div>
                     <Button variant="outline" size="sm">
                       Reconnect
@@ -607,14 +662,10 @@ const Dashboard = () => {
                   <div className="flex items-center justify-between p-3 border rounded-md">
                     <div className="flex items-center">
                       <CreditCard className="h-5 w-5 mr-2" />
-                      <span>
-                        {mockApi.user.coinbaseConnected
-                          ? `Connected to ${mockApi.user.email}`
-                          : "Not connected"}
-                      </span>
+                      <span>Coinbase connection managed separately</span>
                     </div>
-                    <Button variant={mockApi.user.coinbaseConnected ? "outline" : "default"} size="sm">
-                      {mockApi.user.coinbaseConnected ? "Reconnect" : "Connect"}
+                    <Button variant="outline" size="sm">
+                      Configure
                     </Button>
                   </div>
                 </div>

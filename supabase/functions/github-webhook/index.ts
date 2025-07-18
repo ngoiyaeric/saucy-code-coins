@@ -1,6 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { crypto } from "https://deno.land/std@0.168.0/crypto/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -20,9 +21,42 @@ serve(async (req) => {
 
     const signature = req.headers.get('x-hub-signature-256');
     const body = await req.text();
+    
+    // Verify webhook signature
+    const webhookSecret = Deno.env.get('GITHUB_WEBHOOK_SECRET');
+    if (webhookSecret && signature) {
+      const sigHex = signature.replace('sha256=', '');
+      const encoder = new TextEncoder();
+      const key = await crypto.subtle.importKey(
+        'raw',
+        encoder.encode(webhookSecret),
+        { name: 'HMAC', hash: 'SHA-256' },
+        false,
+        ['sign']
+      );
+      const expectedSig = await crypto.subtle.sign('HMAC', key, encoder.encode(body));
+      const expectedHex = Array.from(new Uint8Array(expectedSig))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
+      
+      if (sigHex !== expectedHex) {
+        console.error('Invalid webhook signature');
+        return new Response('Unauthorized', { status: 401 });
+      }
+    }
+
     const payload = JSON.parse(body);
 
-    console.log('GitHub webhook received:', payload.action, payload.pull_request?.number);
+    console.log('GitHub webhook received:', payload.action, payload.pull_request?.number || payload.installation?.id);
+
+    // Handle installation events
+    if (payload.installation) {
+      if (payload.action === 'created' || payload.action === 'repositories_added') {
+        await handleInstallation(supabaseClient, payload);
+      } else if (payload.action === 'deleted' || payload.action === 'repositories_removed') {
+        await handleInstallationRemoval(supabaseClient, payload);
+      }
+    }
 
     // Handle pull request events
     if (payload.pull_request && payload.action === 'closed' && payload.pull_request.merged) {
@@ -111,6 +145,43 @@ async function getBountyAmount(supabaseClient: any, repoFullName: string, issueN
   }
 
   return { amount: bounty.amount, bountyId: bounty.id };
+}
+
+async function handleInstallation(supabaseClient: any, payload: any) {
+  const installation = payload.installation;
+  const account = installation.account;
+  
+  try {
+    await supabaseClient
+      .from('github_installations')
+      .upsert({
+        installation_id: installation.id.toString(),
+        account_id: account.id.toString(),
+        account_login: account.login,
+        account_type: account.type,
+        permissions: installation.permissions || {},
+        repository_selection: installation.repository_selection || 'selected'
+      });
+    
+    console.log(`GitHub app installed for ${account.login} (${account.type})`);
+  } catch (error) {
+    console.error('Error recording installation:', error);
+  }
+}
+
+async function handleInstallationRemoval(supabaseClient: any, payload: any) {
+  const installation = payload.installation;
+  
+  try {
+    await supabaseClient
+      .from('github_installations')
+      .delete()
+      .eq('installation_id', installation.id.toString());
+    
+    console.log(`GitHub app uninstalled for installation ${installation.id}`);
+  } catch (error) {
+    console.error('Error removing installation:', error);
+  }
 }
 
 async function postClaimComment(repoFullName: string, prNumber: number, amount: number) {

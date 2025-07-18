@@ -143,6 +143,7 @@ export type Database = {
           refresh_token: string | null
           updated_at: string
           user_id: string
+          webhook_secret: string | null
         }
         Insert: {
           access_token: string
@@ -152,6 +153,7 @@ export type Database = {
           refresh_token?: string | null
           updated_at?: string
           user_id: string
+          webhook_secret?: string | null
         }
         Update: {
           access_token?: string
@@ -161,6 +163,43 @@ export type Database = {
           refresh_token?: string | null
           updated_at?: string
           user_id?: string
+          webhook_secret?: string | null
+        }
+        Relationships: []
+      }
+      github_installations: {
+        Row: {
+          account_id: string
+          account_login: string
+          account_type: string
+          created_at: string | null
+          id: string
+          installation_id: string
+          permissions: Json | null
+          repository_selection: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          account_id: string
+          account_login: string
+          account_type?: string
+          created_at?: string | null
+          id?: string
+          installation_id: string
+          permissions?: Json | null
+          repository_selection?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          account_id?: string
+          account_login?: string
+          account_type?: string
+          created_at?: string | null
+          id?: string
+          installation_id?: string
+          permissions?: Json | null
+          repository_selection?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }

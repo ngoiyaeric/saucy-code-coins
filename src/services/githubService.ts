@@ -95,7 +95,22 @@ export interface BountyAssignment {
 export class GitHubService {
   private static async getAccessToken(): Promise<string | null> {
     const { data: { session } } = await supabase.auth.getSession();
-    return session?.provider_token || null;
+    if (!session?.user?.id) {
+      throw new Error('User not authenticated');
+    }
+
+    // Get GitHub access token from github_auth table
+    const { data: githubAuth, error } = await supabase
+      .from('github_auth')
+      .select('access_token')
+      .eq('user_id', session.user.id)
+      .single();
+
+    if (error || !githubAuth) {
+      throw new Error('No GitHub access token found. Please connect your GitHub account.');
+    }
+
+    return githubAuth.access_token;
   }
 
   private static async makeGitHubRequest(url: string): Promise<any> {

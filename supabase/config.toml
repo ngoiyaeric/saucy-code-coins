@@ -117,3 +117,6 @@ verify_jwt = false
 
 [functions.repository-protection]
 verify_jwt = false
+
+[functions.production-verification]
+verify_jwt = false

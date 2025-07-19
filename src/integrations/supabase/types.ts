@@ -25,6 +25,7 @@ export type Database = {
           issue_id: string
           issue_number: number
           issue_title: string
+          protection_status: string | null
           repository_id: string
           repository_name: string
           status: string
@@ -40,6 +41,7 @@ export type Database = {
           issue_id: string
           issue_number: number
           issue_title: string
+          protection_status?: string | null
           repository_id: string
           repository_name: string
           status?: string
@@ -55,6 +57,7 @@ export type Database = {
           issue_id?: string
           issue_number?: number
           issue_title?: string
+          protection_status?: string | null
           repository_id?: string
           repository_name?: string
           status?: string
@@ -94,6 +97,13 @@ export type Database = {
           success?: boolean
         }
         Relationships: [
+          {
+            foreignKeyName: "bounty_logs_bounty_id_fkey"
+            columns: ["bounty_id"]
+            isOneToOne: false
+            referencedRelation: "active_bounties"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "bounty_logs_bounty_id_fkey"
             columns: ["bounty_id"]
@@ -145,6 +155,7 @@ export type Database = {
           created_at: string
           enabled: boolean
           id: string
+          protection_status: string | null
           repository_description: string | null
           repository_full_name: string
           repository_id: string
@@ -158,6 +169,7 @@ export type Database = {
           created_at?: string
           enabled?: boolean
           id?: string
+          protection_status?: string | null
           repository_description?: string | null
           repository_full_name: string
           repository_id: string
@@ -171,6 +183,7 @@ export type Database = {
           created_at?: string
           enabled?: boolean
           id?: string
+          protection_status?: string | null
           repository_description?: string | null
           repository_full_name?: string
           repository_id?: string
@@ -399,6 +412,7 @@ export type Database = {
           open_issues_count: number | null
           owner_login: string
           owner_type: string
+          protection_status: string | null
           repository_id: string
           stargazers_count: number | null
           updated_at: string
@@ -415,6 +429,7 @@ export type Database = {
           open_issues_count?: number | null
           owner_login: string
           owner_type: string
+          protection_status?: string | null
           repository_id: string
           stargazers_count?: number | null
           updated_at?: string
@@ -431,6 +446,7 @@ export type Database = {
           open_issues_count?: number | null
           owner_login?: string
           owner_type?: string
+          protection_status?: string | null
           repository_id?: string
           stargazers_count?: number | null
           updated_at?: string
@@ -521,10 +537,108 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      active_bounties: {
+        Row: {
+          amount: number | null
+          complexity: string | null
+          created_at: string | null
+          creator_id: string | null
+          currency: string | null
+          id: string | null
+          issue_id: string | null
+          issue_number: number | null
+          issue_title: string | null
+          protection_status: string | null
+          repository_id: string | null
+          repository_name: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          amount?: number | null
+          complexity?: string | null
+          created_at?: string | null
+          creator_id?: string | null
+          currency?: string | null
+          id?: string | null
+          issue_id?: string | null
+          issue_number?: number | null
+          issue_title?: string | null
+          protection_status?: string | null
+          repository_id?: string | null
+          repository_name?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number | null
+          complexity?: string | null
+          created_at?: string | null
+          creator_id?: string | null
+          currency?: string | null
+          id?: string | null
+          issue_id?: string | null
+          issue_number?: number | null
+          issue_title?: string | null
+          protection_status?: string | null
+          repository_id?: string | null
+          repository_name?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      active_repositories: {
+        Row: {
+          created_at: string | null
+          enabled: boolean | null
+          id: string | null
+          protection_status: string | null
+          repository_description: string | null
+          repository_full_name: string | null
+          repository_id: string | null
+          repository_language: string | null
+          repository_name: string | null
+          stargazers_count: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          enabled?: boolean | null
+          id?: string | null
+          protection_status?: string | null
+          repository_description?: string | null
+          repository_full_name?: string | null
+          repository_id?: string | null
+          repository_language?: string | null
+          repository_name?: string | null
+          stargazers_count?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          enabled?: boolean | null
+          id?: string | null
+          protection_status?: string | null
+          repository_description?: string | null
+          repository_full_name?: string | null
+          repository_id?: string | null
+          repository_language?: string | null
+          repository_name?: string | null
+          stargazers_count?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      safe_soft_delete: {
+        Args: { table_name: string; record_id: string; reason?: string }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never

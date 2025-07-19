@@ -206,14 +206,27 @@ async function handleInstallationRemoval(supabaseClient: any, payload: any) {
   const installation = payload.installation;
   
   try {
+    // CRITICAL SAFETY: Never delete repositories or repository data!
+    // Only mark installation as inactive, preserve all repository and bounty data
+    console.log(`GitHub app uninstalled for installation ${installation.id} - PRESERVING ALL REPOSITORY DATA`);
+    
+    // Instead of deleting, mark as inactive to preserve data integrity
     await supabaseClient
       .from('github_installations')
-      .delete()
+      .update({
+        repository_selection: 'inactive',
+        updated_at: new Date().toISOString()
+      })
       .eq('installation_id', installation.id.toString());
     
-    console.log(`GitHub app uninstalled for installation ${installation.id}`);
+    // Log the preservation action
+    console.log(`Installation ${installation.id} marked as inactive - ALL REPOSITORY DATA PRESERVED`);
+    
+    // DO NOT DELETE ANYTHING - repositories, bounties, payouts must be preserved
+    // This ensures business continuity and data integrity
+    
   } catch (error) {
-    console.error('Error removing installation:', error);
+    console.error('Error marking installation as inactive (DATA PRESERVED):', error);
   }
 }
 

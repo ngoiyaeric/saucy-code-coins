@@ -65,13 +65,44 @@ serve(async (req) => {
       const pr = payload.pull_request;
       const repository = payload.repository;
       
+      // Verify this is a public repository
+      if (repository.private) {
+        console.log(`Skipping private repository: ${repository.full_name}`);
+        return new Response(JSON.stringify({ success: true, message: 'Private repository skipped' }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      
       // Extract issue numbers from PR body or title
       const issueNumbers = extractIssueNumbers(pr.body + ' ' + pr.title);
       
       if (issueNumbers.length > 0) {
+        console.log(`Found ${issueNumbers.length} linked issues: ${issueNumbers.join(', ')}`);
+        
         // Process payouts for each linked issue
         for (const issueNumber of issueNumbers) {
           try {
+            // Verify the issue exists and is in the same repository
+            const issueCheck = await fetch(`https://api.github.com/repos/${repository.full_name}/issues/${issueNumber}`, {
+              headers: {
+                'Authorization': `token ${Deno.env.get('GITHUB_TOKEN')}`,
+                'Accept': 'application/vnd.github.v3+json',
+              },
+            });
+
+            if (!issueCheck.ok) {
+              console.warn(`Issue #${issueNumber} not found in repository ${repository.full_name}`);
+              continue;
+            }
+
+            const issueData = await issueCheck.json();
+            
+            // Skip if it's actually a PR
+            if (issueData.pull_request) {
+              console.log(`Skipping PR #${issueNumber} (not an issue)`);
+              continue;
+            }
+
             const payoutResponse = await supabaseClient.functions.invoke('process-bounty-payout', {
               body: {
                 repositoryId: repository.id.toString(),
@@ -80,17 +111,31 @@ serve(async (req) => {
                 pullRequestId: pr.id.toString(),
                 contributorId: pr.user.id.toString(),
                 contributorLogin: pr.user.login,
-                issueNumber: issueNumber
+                issueNumber: issueNumber,
+                issueTitle: issueData.title,
+                repositoryStars: repository.stargazers_count || 0,
+                isPublicRepo: !repository.private
               }
             });
 
             console.log(`Bounty payout processing result for issue #${issueNumber}:`, payoutResponse);
+            
+            // Add delay between payout processing to avoid overwhelming the system
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
           } catch (error) {
             console.error(`Error processing payout for issue #${issueNumber}:`, error);
+            
+            // Continue processing other issues even if one fails
+            continue;
           }
         }
       } else {
         console.log('No issue numbers found in PR body/title');
+        
+        // Log the PR content for debugging
+        console.log('PR Title:', pr.title);
+        console.log('PR Body (first 200 chars):', (pr.body || '').substring(0, 200));
       }
     }
 

@@ -93,3 +93,6 @@ verify_jwt = false
 
 [functions.verify-pr]
 verify_jwt = true
+
+[functions.check-coinbase-balance]
+verify_jwt = true

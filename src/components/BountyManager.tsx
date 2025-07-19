@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { GitHubIssue, BountyAssignment, GitHubRepository } from '@/services/githubService';
-import { DollarSign, ExternalLink, MessageSquare, Calendar, TrendingUp, AlertCircle } from 'lucide-react';
+import { DollarSign, ExternalLink, MessageSquare, Calendar, TrendingUp, AlertCircle, Wallet } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -23,6 +23,51 @@ const BountyManager: React.FC<BountyManagerProps> = ({
 }) => {
   const [customAmounts, setCustomAmounts] = useState<Record<number, number>>({});
   const [loadingBounties, setLoadingBounties] = useState<Set<number>>(new Set());
+  const [coinbaseBalance, setCoinbaseBalance] = useState<number | null>(null);
+  const [checkingBalance, setCheckingBalance] = useState(false);
+
+  // Check Coinbase balance on component mount
+  useEffect(() => {
+    checkCoinbaseBalance();
+  }, []);
+
+  const checkCoinbaseBalance = async () => {
+    setCheckingBalance(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('check-coinbase-balance', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (error) {
+        console.error('Error checking balance:', error);
+        return;
+      }
+
+      setCoinbaseBalance(data.totalUsd);
+    } catch (error) {
+      console.error('Error checking Coinbase balance:', error);
+    } finally {
+      setCheckingBalance(false);
+    }
+  };
+
+  const getTotalPendingBounties = () => {
+    // Calculate total from custom amounts that are set
+    return Object.values(customAmounts).reduce((total, amount) => total + (amount || 0), 0);
+  };
+
+  const canAffordBounty = (amount: number) => {
+    if (coinbaseBalance === null) return true; // Allow if balance is unknown
+    const pendingTotal = getTotalPendingBounties();
+    return (coinbaseBalance - pendingTotal - amount) >= 0;
+  };
 
   const getComplexityColor = (complexity: string) => {
     switch (complexity) {
@@ -44,6 +89,12 @@ const BountyManager: React.FC<BountyManagerProps> = ({
 
   const handleCreateBounty = async (issue: GitHubIssue, bountyAssignment: BountyAssignment) => {
     const amount = customAmounts[issue.id] || bountyAssignment.suggestedAmount;
+    
+    // Check if user can afford this bounty
+    if (!canAffordBounty(amount)) {
+      toast.error(`Insufficient balance. You have $${coinbaseBalance?.toFixed(2)} available, but need $${amount} for this bounty.`);
+      return;
+    }
     
     setLoadingBounties(prev => new Set(prev).add(issue.id));
     
@@ -77,6 +128,12 @@ const BountyManager: React.FC<BountyManagerProps> = ({
       }
 
       toast.success(`Bounty of $${amount} created for issue #${issue.number}`);
+      
+      // Update local balance to reflect the commitment
+      if (coinbaseBalance !== null) {
+        setCoinbaseBalance(prev => (prev || 0) - amount);
+      }
+      
       onBountyCreate?.(issue.id, amount);
       
     } catch (error) {
@@ -106,14 +163,29 @@ const BountyManager: React.FC<BountyManagerProps> = ({
           <h3 className="text-lg font-semibold">{repository.name}</h3>
           <p className="text-sm text-muted-foreground">{repository.description}</p>
         </div>
-        <a 
-          href={repository.html_url} 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="flex items-center text-sm text-primary hover:underline"
-        >
-          View on GitHub <ExternalLink className="ml-1 h-3 w-3" />
-        </a>
+        <div className="flex items-center space-x-4">
+          {/* Coinbase Balance Display */}
+          <div className="flex items-center space-x-2 text-sm">
+            <Wallet className="h-4 w-4" />
+            {checkingBalance ? (
+              <span className="text-muted-foreground">Checking balance...</span>
+            ) : coinbaseBalance !== null ? (
+              <span className="font-medium text-green-600">
+                ${coinbaseBalance.toFixed(2)} available
+              </span>
+            ) : (
+              <span className="text-muted-foreground">Connect Coinbase to see balance</span>
+            )}
+          </div>
+          <a 
+            href={repository.html_url} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="flex items-center text-sm text-primary hover:underline"
+          >
+            View on GitHub <ExternalLink className="ml-1 h-3 w-3" />
+          </a>
+        </div>
       </div>
 
       <div className="grid gap-4">
@@ -209,11 +281,17 @@ const BountyManager: React.FC<BountyManagerProps> = ({
                   <span className="text-sm text-muted-foreground">USD</span>
                   <Button
                     onClick={() => handleCreateBounty(issue, bountyAssignment)}
-                    disabled={loadingBounties.has(issue.id)}
+                    disabled={
+                      loadingBounties.has(issue.id) || 
+                      !canAffordBounty(customAmounts[issue.id] || bountyAssignment.suggestedAmount)
+                    }
                     size="sm"
                     className="ml-auto"
+                    variant={!canAffordBounty(customAmounts[issue.id] || bountyAssignment.suggestedAmount) ? "destructive" : "default"}
                   >
-                    {loadingBounties.has(issue.id) ? 'Creating...' : 'Create Bounty'}
+                    {loadingBounties.has(issue.id) ? 'Creating...' : 
+                     !canAffordBounty(customAmounts[issue.id] || bountyAssignment.suggestedAmount) ? 'Insufficient Funds' : 
+                     'Create Bounty'}
                   </Button>
                 </div>
               </CardContent>

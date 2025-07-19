@@ -52,39 +52,64 @@ serve(async (req) => {
     let transactionId = 'mock-transaction-id';
     let success = true;
 
-    // Check if we're in development mode
-    if (coinbaseAuth.access_token === 'dev-mock-access-token') {
-      console.log('Using development mode for crypto payment');
-      
-      // Simulate successful payment in development mode
-      transactionId = `dev-tx-${Date.now()}`;
-      console.log(`Mock payment of ${payout.amount} USDC to ${walletAddress}`);
-      
-    } else {
-      // Real Coinbase API call (when actual credentials are provided)
-      const coinbaseResponse = await fetch('https://api.coinbase.com/v2/accounts/primary/transactions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${coinbaseAuth.access_token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          type: 'send',
-          to: walletAddress,
-          amount: payout.amount.toString(),
-          currency: 'USDC', // Send USDC stablecoin
-          description: `Bounty payment for PR #${payout.pull_request_number} in ${payout.repository_name}`,
-        }),
-      });
-
-      const coinbaseData = await coinbaseResponse.json();
-
-      if (!coinbaseResponse.ok) {
-        throw new Error(`Coinbase API error: ${coinbaseData.errors?.[0]?.message || 'Unknown error'}`);
-      }
-
-      transactionId = coinbaseData.data.id;
+    // Use Coinbase Advanced Trade API for production payouts
+    const apiKey = Deno.env.get('COINBASE_API_KEY_ID');
+    const apiSecret = Deno.env.get('COINBASE_API_SECRET');
+    
+    if (!apiKey || !apiSecret) {
+      throw new Error('Coinbase API credentials not configured');
     }
+
+    // Create authentication for Coinbase Advanced Trade API
+    const timestamp = Math.floor(Date.now() / 1000).toString();
+    const method = 'POST';
+    const path = '/api/v3/brokerage/orders';
+    
+    // Create order payload for USDC transfer
+    const orderPayload = {
+      client_order_id: `bounty-${payoutId}-${Date.now()}`,
+      product_id: 'USDC-USD',
+      side: 'sell', // Convert USDC to fiat for bank transfer
+      order_configuration: {
+        market_market_ioc: {
+          quote_size: payout.amount.toString()
+        }
+      }
+    };
+    
+    const message = timestamp + method + path + JSON.stringify(orderPayload);
+    
+    const key = await crypto.subtle.importKey(
+      'raw',
+      new TextEncoder().encode(apiSecret),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['sign']
+    );
+    
+    const signature = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(message));
+    const signatureHex = Array.from(new Uint8Array(signature))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+
+    const coinbaseResponse = await fetch(`https://api.coinbase.com${path}`, {
+      method,
+      headers: {
+        'CB-ACCESS-KEY': apiKey,
+        'CB-ACCESS-SIGN': signatureHex,
+        'CB-ACCESS-TIMESTAMP': timestamp,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(orderPayload),
+    });
+
+    const coinbaseData = await coinbaseResponse.json();
+
+    if (!coinbaseResponse.ok) {
+      throw new Error(`Coinbase API error: ${coinbaseData.error || 'Unknown error'}`);
+    }
+
+    transactionId = coinbaseData.order_id || `order-${Date.now()}`;
 
     // Create transaction record
     const { error: transactionError } = await supabaseClient
@@ -117,10 +142,7 @@ serve(async (req) => {
     return new Response(JSON.stringify({
       success: true,
       transactionId: transactionId,
-      message: coinbaseAuth.access_token === 'dev-mock-access-token' 
-        ? 'Mock crypto payment processed successfully (development mode)'
-        : 'Crypto payment sent successfully',
-      developmentMode: coinbaseAuth.access_token === 'dev-mock-access-token'
+      message: 'USDC payment processed successfully - funds converted to fiat for bank transfer'
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

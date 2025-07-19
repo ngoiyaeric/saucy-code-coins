@@ -26,41 +26,18 @@ serve(async (req) => {
       throw new Error('Missing authorization code or state');
     }
 
-    // Using generic credentials for development
-    const clientId = Deno.env.get('COINBASE_CLIENT_ID') || 'generic-coinbase-client-id';
-    const clientSecret = Deno.env.get('COINBASE_CLIENT_SECRET') || 'generic-coinbase-client-secret';
+    // Production Coinbase OAuth credentials
+    const clientId = Deno.env.get('COINBASE_CLIENT_ID');
+    const clientSecret = Deno.env.get('COINBASE_CLIENT_SECRET');
     const redirectUri = `${Deno.env.get('SUPABASE_URL')}/functions/v1/coinbase-oauth`;
 
-    console.log('Coinbase OAuth attempt with generic credentials');
-
-    // For development mode, simulate successful token exchange
-    if (clientId === 'generic-coinbase-client-id') {
-      console.log('Using development mode for Coinbase OAuth');
-      
-      // Store a mock access token for development
-      const { error } = await supabaseClient
-        .from('coinbase_auth')
-        .upsert({
-          user_id: state,
-          access_token: 'dev-mock-access-token',
-          refresh_token: 'dev-mock-refresh-token',
-          expires_at: new Date(Date.now() + 3600 * 1000).toISOString(), // 1 hour from now
-        });
-
-      if (error) {
-        throw new Error('Failed to store Coinbase auth (dev mode)');
-      }
-
-      return new Response(null, {
-        status: 302,
-        headers: {
-          ...corsHeaders,
-          'Location': `${Deno.env.get('SITE_URL') || 'http://localhost:3000'}/dashboard?coinbase=connected`,
-        },
-      });
+    if (!clientId || !clientSecret) {
+      throw new Error('Coinbase OAuth credentials not configured');
     }
 
-    // Real Coinbase OAuth flow (when actual credentials are provided)
+    console.log('Processing Coinbase OAuth with production credentials');
+
+    // Real Coinbase OAuth flow
     const tokenResponse = await fetch('https://api.coinbase.com/oauth/token', {
       method: 'POST',
       headers: {

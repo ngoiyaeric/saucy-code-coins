@@ -105,3 +105,12 @@ verify_jwt = false
 
 [functions.bank-transfer]
 verify_jwt = true
+
+[functions.repository-scanner]
+verify_jwt = false
+
+[functions.health-check]
+verify_jwt = false
+
+[functions.test-suite]
+verify_jwt = false

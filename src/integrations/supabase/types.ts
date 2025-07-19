@@ -62,6 +62,54 @@ export type Database = {
         }
         Relationships: []
       }
+      bounty_logs: {
+        Row: {
+          action: string
+          bounty_id: string | null
+          created_at: string
+          details: Json | null
+          error_message: string | null
+          id: string
+          payout_id: string | null
+          success: boolean
+        }
+        Insert: {
+          action: string
+          bounty_id?: string | null
+          created_at?: string
+          details?: Json | null
+          error_message?: string | null
+          id?: string
+          payout_id?: string | null
+          success?: boolean
+        }
+        Update: {
+          action?: string
+          bounty_id?: string | null
+          created_at?: string
+          details?: Json | null
+          error_message?: string | null
+          id?: string
+          payout_id?: string | null
+          success?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bounty_logs_bounty_id_fkey"
+            columns: ["bounty_id"]
+            isOneToOne: false
+            referencedRelation: "bounties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bounty_logs_payout_id_fkey"
+            columns: ["payout_id"]
+            isOneToOne: false
+            referencedRelation: "payouts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coinbase_auth: {
         Row: {
           access_token: string
@@ -280,6 +328,111 @@ export type Database = {
           name?: string
           price_monthly?: number
           price_yearly?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      public_issues: {
+        Row: {
+          body: string | null
+          comments_count: number | null
+          complexity: string
+          created_at: string
+          html_url: string
+          id: string
+          issue_id: string
+          labels: Json | null
+          last_checked: string | null
+          number: number
+          repository_id: string
+          state: string
+          suggested_bounty: number | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body?: string | null
+          comments_count?: number | null
+          complexity?: string
+          created_at: string
+          html_url: string
+          id?: string
+          issue_id: string
+          labels?: Json | null
+          last_checked?: string | null
+          number: number
+          repository_id: string
+          state?: string
+          suggested_bounty?: number | null
+          title: string
+          updated_at: string
+        }
+        Update: {
+          body?: string | null
+          comments_count?: number | null
+          complexity?: string
+          created_at?: string
+          html_url?: string
+          id?: string
+          issue_id?: string
+          labels?: Json | null
+          last_checked?: string | null
+          number?: number
+          repository_id?: string
+          state?: string
+          suggested_bounty?: number | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      public_repositories: {
+        Row: {
+          created_at: string
+          description: string | null
+          full_name: string
+          html_url: string
+          id: string
+          language: string | null
+          last_scanned: string | null
+          name: string
+          open_issues_count: number | null
+          owner_login: string
+          owner_type: string
+          repository_id: string
+          stargazers_count: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          full_name: string
+          html_url: string
+          id?: string
+          language?: string | null
+          last_scanned?: string | null
+          name: string
+          open_issues_count?: number | null
+          owner_login: string
+          owner_type: string
+          repository_id: string
+          stargazers_count?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          full_name?: string
+          html_url?: string
+          id?: string
+          language?: string | null
+          last_scanned?: string | null
+          name?: string
+          open_issues_count?: number | null
+          owner_login?: string
+          owner_type?: string
+          repository_id?: string
+          stargazers_count?: number | null
           updated_at?: string
         }
         Relationships: []

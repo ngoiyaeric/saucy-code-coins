@@ -58,8 +58,10 @@ serve(async (req) => {
       }
     }
 
-    // Handle pull request events
+    // Handle pull request events for automatic bounty payouts
     if (payload.pull_request && payload.action === 'closed' && payload.pull_request.merged) {
+      console.log('Pull request merged, processing bounty payout...');
+      
       const pr = payload.pull_request;
       const repository = payload.repository;
       
@@ -67,42 +69,28 @@ serve(async (req) => {
       const issueNumbers = extractIssueNumbers(pr.body + ' ' + pr.title);
       
       if (issueNumbers.length > 0) {
-        // Create payout entries for each linked issue
+        // Process payouts for each linked issue
         for (const issueNumber of issueNumbers) {
-          // Check if this issue has a bounty
-          const bountyData = await getBountyAmount(supabaseClient, repository.full_name, issueNumber);
-          
-          if (bountyData) {
-            const { error } = await supabaseClient
-              .from('payouts')
-              .insert({
-                repository_id: repository.id.toString(),
-                repository_name: repository.full_name,
-                pull_request_id: pr.id.toString(),
-                pull_request_number: pr.number,
-                contributor_id: pr.user.id.toString(),
-                contributor_name: pr.user.login,
-                amount: bountyData.amount,
-                currency: 'USD',
-                status: 'pending_claim'
-              });
+          try {
+            const payoutResponse = await supabaseClient.functions.invoke('process-bounty-payout', {
+              body: {
+                repositoryId: repository.id.toString(),
+                repositoryName: repository.full_name,
+                pullRequestNumber: pr.number,
+                pullRequestId: pr.id.toString(),
+                contributorId: pr.user.id.toString(),
+                contributorLogin: pr.user.login,
+                issueNumber: issueNumber
+              }
+            });
 
-            if (error) {
-              console.error('Error creating payout:', error);
-            } else {
-              console.log(`Payout created for PR #${pr.number}, issue #${issueNumber}`);
-              
-              // Update bounty status to pending_payout
-              await supabaseClient
-                .from('bounties')
-                .update({ status: 'pending_payout' })
-                .eq('id', bountyData.bountyId);
-              
-              // Post comment on PR with claim link
-              await postClaimComment(repository.full_name, pr.number, bountyData.amount);
-            }
+            console.log(`Bounty payout processing result for issue #${issueNumber}:`, payoutResponse);
+          } catch (error) {
+            console.error(`Error processing payout for issue #${issueNumber}:`, error);
           }
         }
+      } else {
+        console.log('No issue numbers found in PR body/title');
       }
     }
 

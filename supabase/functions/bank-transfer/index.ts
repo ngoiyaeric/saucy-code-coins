@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
@@ -18,9 +17,9 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { payoutId, walletAddress } = await req.json();
+    const { payoutId, bankDetails } = await req.json();
 
-    console.log('Processing crypto payment request:', { payoutId, walletAddress });
+    console.log('Processing bank transfer request:', { payoutId, bankDetails });
 
     // Get the payout details
     const { data: payout, error: payoutError } = await supabaseClient
@@ -42,7 +41,7 @@ serve(async (req) => {
       .from('bounties')
       .select('creator_id, repository_name, issue_number')
       .eq('repository_id', payout.repository_id)
-      .eq('issue_number', payout.pull_request_number) // Assuming PR targets the issue
+      .eq('issue_number', payout.pull_request_number)
       .single();
 
     if (bountyError || !bounty) {
@@ -60,24 +59,24 @@ serve(async (req) => {
       throw new Error('Repository owner has not connected Coinbase account');
     }
 
-    let transactionId = 'mock-transaction-id';
-    let success = true;
-
-    // Use Coinbase API to send USDC directly to contributor's wallet
+    // Use Coinbase API to convert USDC to fiat and transfer to bank
     const timestamp = Math.floor(Date.now() / 1000).toString();
     const method = 'POST';
-    const path = '/v2/accounts/USDC/transactions';
+    const path = '/v2/withdrawals';
     
-    // Create USDC transfer payload
-    const transferPayload = {
-      type: 'send',
-      to: walletAddress,
+    // Create bank withdrawal payload
+    const withdrawalPayload = {
+      type: 'bank_wire',
       amount: payout.amount.toString(),
-      currency: 'USDC',
+      currency: 'USD',
+      payment_method: {
+        type: 'bank_wire',
+        bank_details: bankDetails
+      },
       description: `Bounty payout for PR #${payout.pull_request_number} in ${payout.repository_name}`
     };
     
-    const message = timestamp + method + path + JSON.stringify(transferPayload);
+    const message = timestamp + method + path + JSON.stringify(withdrawalPayload);
     
     const key = await crypto.subtle.importKey(
       'raw',
@@ -101,17 +100,16 @@ serve(async (req) => {
         'CB-ACCESS-TOKEN': coinbaseAuth.access_token,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(transferPayload),
+      body: JSON.stringify(withdrawalPayload),
     });
 
     const coinbaseData = await coinbaseResponse.json();
 
     if (!coinbaseResponse.ok) {
-      throw new Error(`Coinbase transfer failed: ${coinbaseData.error?.message || 'Unknown error'}`);
+      throw new Error(`Coinbase withdrawal failed: ${coinbaseData.error?.message || 'Unknown error'}`);
     }
 
-    transactionId = coinbaseData.data?.id || `transfer-${Date.now()}`;
-    success = coinbaseData.data?.status === 'completed';
+    const transactionId = coinbaseData.data?.id || `withdrawal-${Date.now()}`;
 
     // Create transaction record
     const { error: transactionError } = await supabaseClient
@@ -120,7 +118,7 @@ serve(async (req) => {
         payout_id: payoutId,
         coinbase_transaction_id: transactionId,
         amount: payout.amount,
-        currency: 'USDC',
+        currency: 'USD',
         status: 'pending',
       });
 
@@ -144,13 +142,13 @@ serve(async (req) => {
     return new Response(JSON.stringify({
       success: true,
       transactionId: transactionId,
-      message: 'USDC payment processed successfully - funds converted to fiat for bank transfer'
+      message: 'Bank transfer initiated successfully - funds will arrive in 1-3 business days'
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
-    console.error('Error sending crypto:', error);
+    console.error('Error processing bank transfer:', error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 400,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -18,35 +18,46 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { payoutId, userId, walletAddress } = await req.json();
+    const { payoutId, walletAddress } = await req.json();
 
-    console.log('Processing crypto payment request:', { payoutId, userId, walletAddress });
+    console.log('Processing crypto payment request:', { payoutId, walletAddress });
 
     // Get the payout details
     const { data: payout, error: payoutError } = await supabaseClient
       .from('payouts')
       .select('*')
       .eq('id', payoutId)
-      .eq('contributor_id', userId)
       .single();
 
     if (payoutError || !payout) {
-      throw new Error('Payout not found or unauthorized');
+      throw new Error('Payout not found');
     }
 
     if (payout.status !== 'pending') {
       throw new Error('Payout has already been processed');
     }
 
-    // Get user's Coinbase auth
+    // Get the bounty details to find who should pay (the bounty creator)
+    const { data: bounty, error: bountyError } = await supabaseClient
+      .from('bounties')
+      .select('creator_id, repository_name, issue_number')
+      .eq('repository_id', payout.repository_id)
+      .eq('issue_number', payout.pull_request_number) // Assuming PR targets the issue
+      .single();
+
+    if (bountyError || !bounty) {
+      throw new Error('Associated bounty not found');
+    }
+
+    // Get the bounty creator's Coinbase auth (repository owner who pays)
     const { data: coinbaseAuth } = await supabaseClient
       .from('coinbase_auth')
       .select('access_token')
-      .eq('user_id', userId)
+      .eq('user_id', bounty.creator_id)
       .single();
 
     if (!coinbaseAuth) {
-      throw new Error('Coinbase authentication not found');
+      throw new Error('Repository owner has not connected Coinbase account');
     }
 
     let transactionId = 'mock-transaction-id';

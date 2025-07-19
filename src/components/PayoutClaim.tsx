@@ -41,7 +41,6 @@ const PayoutClaim: React.FC<PayoutClaimProps> = ({ payout, onClaimed }) => {
       const response = await supabase.functions.invoke('send-crypto', {
         body: {
           payoutId: payout.id,
-          userId: user.id,
           walletAddress: walletAddress.trim(),
         },
       });

@@ -29,8 +29,34 @@ const Auth = () => {
 
   useEffect(() => {
     if (user && !loading) {
-      console.log('User authenticated, redirecting to dashboard');
-      navigate('/dashboard');
+      console.log('User authenticated, storing GitHub token...');
+      
+      // Try to store the GitHub access token
+      const storeGitHubToken = async () => {
+        try {
+          const { data: session } = await supabase.auth.getSession();
+          if (session?.session?.access_token) {
+            const { data, error } = await supabase.functions.invoke('github-oauth-handler', {
+              headers: {
+                Authorization: `Bearer ${session.session.access_token}`,
+              },
+            });
+            
+            if (error) {
+              console.warn('Failed to store GitHub token:', error);
+            } else {
+              console.log('GitHub token stored successfully:', data);
+            }
+          }
+        } catch (error) {
+          console.warn('Error storing GitHub token:', error);
+        }
+        
+        // Navigate to dashboard regardless of token storage success
+        navigate('/dashboard');
+      };
+      
+      storeGitHubToken();
     }
   }, [user, loading, navigate]);
 

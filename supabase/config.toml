@@ -120,3 +120,6 @@ verify_jwt = false
 
 [functions.production-verification]
 verify_jwt = false
+
+[functions.github-oauth-handler]
+verify_jwt = true

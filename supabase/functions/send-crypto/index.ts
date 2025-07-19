@@ -68,13 +68,18 @@ serve(async (req) => {
     const method = 'POST';
     const path = '/v2/accounts/USDC/transactions';
     
-    // Create USDC transfer payload
+    // Calculate 2.5% platform fee and net payout amount
+    const platformFeeRate = 0.025;
+    const platformFee = Number(payout.amount) * platformFeeRate;
+    const netAmount = Number(payout.amount) - platformFee;
+    
+    // Create USDC transfer payload with net amount (after 2.5% fee)
     const transferPayload = {
       type: 'send',
       to: walletAddress,
-      amount: payout.amount.toString(),
+      amount: netAmount.toString(),
       currency: 'USDC',
-      description: `Bounty payout for PR #${payout.pull_request_number} in ${payout.repository_name}`
+      description: `Bounty payout for PR #${payout.pull_request_number} in ${payout.repository_name} (net after 2.5% platform fee)`
     };
     
     const message = timestamp + method + path + JSON.stringify(transferPayload);
@@ -113,13 +118,13 @@ serve(async (req) => {
     transactionId = coinbaseData.data?.id || `transfer-${Date.now()}`;
     success = coinbaseData.data?.status === 'completed';
 
-    // Create transaction record
+    // Create transaction record with net amount and fee details
     const { error: transactionError } = await supabaseClient
       .from('transactions')
       .insert({
         payout_id: payoutId,
         coinbase_transaction_id: transactionId,
-        amount: payout.amount,
+        amount: netAmount,
         currency: 'USDC',
         status: 'pending',
       });
@@ -144,7 +149,9 @@ serve(async (req) => {
     return new Response(JSON.stringify({
       success: true,
       transactionId: transactionId,
-      message: 'USDC payment processed successfully - funds converted to fiat for bank transfer'
+      netAmount: netAmount,
+      platformFee: platformFee,
+      message: `USDC payment processed successfully. Net amount: ${netAmount} USDC (2.5% platform fee: ${platformFee} USDC)`
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

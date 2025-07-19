@@ -1,8 +1,8 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Github, LogOut, Moon, Sun } from "lucide-react";
+import { Github, LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface NavbarProps {
@@ -11,33 +11,7 @@ interface NavbarProps {
 
 const Navbar = ({ transparent = false }: NavbarProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isDark, setIsDark] = useState(() => {
-    // Check if dark mode preference exists in localStorage or system preference
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('theme');
-      if (stored) {
-        return stored === 'dark';
-      }
-      return window.matchMedia('(prefers-color-scheme: dark)').matches;
-    }
-    return false;
-  });
   const { user, signOut } = useAuth();
-
-  useEffect(() => {
-    // Apply theme on mount and when isDark changes
-    if (isDark) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
-  }, [isDark]);
-
-  const toggleTheme = () => {
-    setIsDark(!isDark);
-  };
 
   const handleSignOut = async () => {
     await signOut();
@@ -50,7 +24,7 @@ const Navbar = ({ transparent = false }: NavbarProps) => {
           {/* Logo and brand */}
           <div className="flex items-center">
             <Link to="/" className="flex items-center">
-              <span className="text-2xl font-bold text-saucy-500">Saucy</span>
+              <span className="text-2xl font-bold text-primary">Σaucy</span>
             </Link>
           </div>
 
@@ -76,14 +50,6 @@ const Navbar = ({ transparent = false }: NavbarProps) => {
                 Documentation
               </Link>
 
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={toggleTheme}
-                className="mr-2 p-2"
-              >
-                {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-              </Button>
 
               {user ? (
                 <div className="flex items-center space-x-2">
@@ -174,13 +140,6 @@ const Navbar = ({ transparent = false }: NavbarProps) => {
             Documentation
           </Link>
           
-          <button
-            onClick={toggleTheme}
-            className="flex items-center justify-center w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground px-3 py-2 rounded-md text-base font-medium"
-          >
-            {isDark ? <Sun className="mr-2 h-4 w-4" /> : <Moon className="mr-2 h-4 w-4" />}
-            Switch to {isDark ? 'Light' : 'Dark'} Theme
-          </button>
           
           {user ? (
             <>

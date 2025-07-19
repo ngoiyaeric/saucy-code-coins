@@ -64,16 +64,21 @@ serve(async (req) => {
     const method = 'POST';
     const path = '/v2/withdrawals';
     
-    // Create bank withdrawal payload
+    // Calculate 2.5% platform fee and net payout amount
+    const platformFeeRate = 0.025;
+    const platformFee = Number(payout.amount) * platformFeeRate;
+    const netAmount = Number(payout.amount) - platformFee;
+    
+    // Create bank withdrawal payload with net amount
     const withdrawalPayload = {
       type: 'bank_wire',
-      amount: payout.amount.toString(),
+      amount: netAmount.toString(),
       currency: 'USD',
       payment_method: {
         type: 'bank_wire',
         bank_details: bankDetails
       },
-      description: `Bounty payout for PR #${payout.pull_request_number} in ${payout.repository_name}`
+      description: `Bounty payout for PR #${payout.pull_request_number} in ${payout.repository_name} (net after 2.5% platform fee)`
     };
     
     const message = timestamp + method + path + JSON.stringify(withdrawalPayload);
@@ -111,13 +116,13 @@ serve(async (req) => {
 
     const transactionId = coinbaseData.data?.id || `withdrawal-${Date.now()}`;
 
-    // Create transaction record
+    // Create transaction record with net amount
     const { error: transactionError } = await supabaseClient
       .from('transactions')
       .insert({
         payout_id: payoutId,
         coinbase_transaction_id: transactionId,
-        amount: payout.amount,
+        amount: netAmount,
         currency: 'USD',
         status: 'pending',
       });
@@ -142,7 +147,9 @@ serve(async (req) => {
     return new Response(JSON.stringify({
       success: true,
       transactionId: transactionId,
-      message: 'Bank transfer initiated successfully - funds will arrive in 1-3 business days'
+      netAmount: netAmount,
+      platformFee: platformFee,
+      message: `Bank transfer initiated successfully. Net amount: $${netAmount} USD (2.5% platform fee: $${platformFee} USD) - funds will arrive in 1-3 business days`
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

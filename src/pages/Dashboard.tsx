@@ -18,6 +18,7 @@ import { CreditCard, Github, BarChart2, Building2, Users } from "lucide-react";
 import { GitHubService, GitHubOrganization, GitHubRepository } from "@/services/githubService";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import CoinbaseConnection from "@/components/CoinbaseConnection";
 
 const Dashboard = () => {
   const [repositories, setRepositories] = useState<Repository[]>([]);
@@ -635,12 +636,15 @@ const Dashboard = () => {
           </TabsContent>
           
           {/* Settings Tab */}
-          <TabsContent value="settings">
+          <TabsContent value="settings" className="space-y-6">
+            {/* Coinbase Connection Section */}
+            <CoinbaseConnection />
+            
             <Card>
               <CardHeader>
-                <CardTitle>Account Settings</CardTitle>
+                <CardTitle>Additional Settings</CardTitle>
                 <CardDescription>
-                  Manage your account settings and connected services.
+                  Manage your account settings and preferences.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -653,19 +657,6 @@ const Dashboard = () => {
                     </div>
                     <Button variant="outline" size="sm">
                       Reconnect
-                    </Button>
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <h3 className="font-medium">Coinbase Connection</h3>
-                  <div className="flex items-center justify-between p-3 border rounded-md">
-                    <div className="flex items-center">
-                      <CreditCard className="h-5 w-5 mr-2" />
-                      <span>Coinbase connection managed separately</span>
-                    </div>
-                    <Button variant="outline" size="sm">
-                      Configure
                     </Button>
                   </div>
                 </div>

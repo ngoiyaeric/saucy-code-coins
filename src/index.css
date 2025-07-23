@@ -4,6 +4,14 @@
 @tailwind utilities;
 
 @layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground font-inter;
+  }
+
   :root {
     --background: 0 0% 100%;
     --foreground: 220 27% 15%;
@@ -63,17 +71,50 @@
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
-}
-
-@layer base {
-  * {
-    @apply border-border;
+  
+  /* Blog-specific styles */
+  .blog-content h1 {
+    @apply text-4xl font-bold font-playfair text-foreground mb-8 mt-12 first:mt-0 leading-tight;
+  }
+  
+  .blog-content h2 {
+    @apply text-3xl font-semibold font-playfair text-foreground mb-6 mt-10 leading-tight;
+  }
+  
+  .blog-content h3 {
+    @apply text-2xl font-semibold font-playfair text-foreground mb-4 mt-8 leading-snug;
+  }
+  
+  .blog-content h4 {
+    @apply text-xl font-semibold text-foreground mb-3 mt-6;
+  }
+  
+  .blog-content p {
+    @apply text-foreground/90 leading-relaxed mb-6 text-lg;
+  }
+  
+  .blog-content ul, .blog-content ol {
+    @apply mb-6 space-y-2 ml-4;
+  }
+  
+  .blog-content li {
+    @apply text-foreground leading-relaxed;
+  }
+  
+  .blog-content blockquote {
+    @apply border-l-4 border-primary pl-6 py-4 my-8 bg-muted/50 rounded-r-lg italic text-muted-foreground;
+  }
+  
+  .blog-content code {
+    @apply bg-muted px-2 py-1 rounded text-sm font-mono;
+  }
+  
+  .blog-content pre {
+    @apply bg-muted p-4 rounded-lg overflow-x-auto mb-6;
   }
 
-  body {
-    @apply bg-background text-foreground;
-  }
 }
+
 
 @layer components {
   .container-wide {

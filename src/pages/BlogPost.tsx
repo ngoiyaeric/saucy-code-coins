@@ -7,6 +7,7 @@ import { CalendarIcon, ArrowLeftIcon } from "lucide-react";
 import { format } from "date-fns";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import BlogContent from "@/components/BlogContent";
 
 interface BlogPost {
   id: string;
@@ -98,18 +99,18 @@ const BlogPost = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background font-inter">
       <Navbar />
       
-      <article className="container mx-auto px-4 py-8">
+      <article className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto">
-          <Link to="/blog" className="inline-flex items-center text-primary hover:underline mb-6">
-            <ArrowLeftIcon className="mr-2 h-4 w-4" />
-            Back to Blog
+          <Link to="/blog" className="inline-flex items-center text-primary hover:text-primary/80 transition-colors mb-8 group">
+            <ArrowLeftIcon className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+            <span className="font-medium">Back to Blog</span>
           </Link>
 
           {post.featured_image_url && (
-            <div className="aspect-video overflow-hidden rounded-lg mb-8">
+            <div className="aspect-video overflow-hidden rounded-xl mb-12 shadow-lg">
               <img
                 src={post.featured_image_url}
                 alt={post.title}
@@ -118,22 +119,24 @@ const BlogPost = () => {
             </div>
           )}
 
-          <header className="mb-8">
-            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+          <header className="mb-12">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-playfair font-bold text-foreground mb-6 leading-tight">
               {post.title}
             </h1>
             
-            <div className="flex items-center gap-4 text-muted-foreground mb-6">
+            <div className="flex items-center gap-6 text-muted-foreground mb-8">
               <div className="flex items-center gap-2">
-                <CalendarIcon className="h-4 w-4" />
-                {format(new Date(post.published_at), 'MMMM dd, yyyy')}
+                <CalendarIcon className="h-5 w-5" />
+                <time dateTime={post.published_at} className="font-medium">
+                  {format(new Date(post.published_at), 'MMMM dd, yyyy')}
+                </time>
               </div>
             </div>
 
             {post.tags && post.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-3">
                 {post.tags.map((tag) => (
-                  <Badge key={tag} variant="secondary">
+                  <Badge key={tag} variant="secondary" className="px-3 py-1 text-sm font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
                     {tag}
                   </Badge>
                 ))}
@@ -141,12 +144,25 @@ const BlogPost = () => {
             )}
           </header>
 
-          <div className="prose prose-lg max-w-none prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-code:text-foreground prose-blockquote:text-muted-foreground prose-blockquote:border-l-primary">
-            {post.content.split('\n').map((paragraph, index) => (
-              <p key={index} className="mb-4 text-foreground leading-relaxed">
-                {paragraph}
-              </p>
-            ))}
+          <div className="prose-container">
+            <BlogContent content={post.content} />
+          </div>
+
+          {/* Reading progress indicator */}
+          <div className="mt-16 pt-8 border-t border-border">
+            <div className="flex items-center justify-between">
+              <Link 
+                to="/blog" 
+                className="inline-flex items-center text-primary hover:text-primary/80 transition-colors group"
+              >
+                <ArrowLeftIcon className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+                <span className="font-medium">More Articles</span>
+              </Link>
+              
+              <div className="text-sm text-muted-foreground">
+                Published {format(new Date(post.published_at), 'MMM dd, yyyy')}
+              </div>
+            </div>
           </div>
         </div>
       </article>

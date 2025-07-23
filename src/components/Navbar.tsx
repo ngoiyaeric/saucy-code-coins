@@ -24,7 +24,7 @@ const Navbar = ({ transparent = false }: NavbarProps) => {
           {/* Logo and brand */}
           <div className="flex items-center">
             <Link to="/" className="flex items-center">
-              <span className="text-2xl font-bold text-primary">Σaucy</span>
+              <span className="text-2xl font-bold text-primary">Saucy</span>
             </Link>
           </div>
 

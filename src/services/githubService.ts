@@ -335,9 +335,9 @@ export class GitHubService {
   }>> {
     const results = [];
     
-    console.log(`Starting to process ${repositories.length} repositories (will process first 10)`);
+    console.log(`Starting to process ${repositories.length} repositories`);
     
-    for (const repo of repositories.slice(0, 10)) {
+    for (const repo of repositories) {
       console.log(`\n=== Processing repository: ${repo.full_name} ===`);
       
       try {
@@ -384,5 +384,18 @@ export class GitHubService {
     console.log(`Errors: ${errorCount}`);
     
     return results;
+  }
+
+  static async searchPublicRepositories(query: string): Promise<GitHubRepository[]> {
+    if (!query) {
+      return [];
+    }
+    try {
+      const result = await this.makeGitHubRequest(`https://api.github.com/search/repositories?q=${query}&per_page=20`);
+      return result.items || [];
+    } catch (error) {
+      console.error('Error searching public repositories:', error);
+      throw error;
+    }
   }
 }

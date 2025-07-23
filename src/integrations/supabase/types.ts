@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      blog_posts: {
+        Row: {
+          author_id: string
+          content: string
+          created_at: string
+          excerpt: string | null
+          featured_image_url: string | null
+          id: string
+          published: boolean
+          published_at: string | null
+          slug: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          content: string
+          created_at?: string
+          excerpt?: string | null
+          featured_image_url?: string | null
+          id?: string
+          published?: boolean
+          published_at?: string | null
+          slug: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          content?: string
+          created_at?: string
+          excerpt?: string | null
+          featured_image_url?: string | null
+          id?: string
+          published?: boolean
+          published_at?: string | null
+          slug?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       bounties: {
         Row: {
           amount: number
@@ -25,6 +70,7 @@ export type Database = {
           issue_id: string
           issue_number: number
           issue_title: string
+          protection_status: string | null
           repository_id: string
           repository_name: string
           status: string
@@ -40,6 +86,7 @@ export type Database = {
           issue_id: string
           issue_number: number
           issue_title: string
+          protection_status?: string | null
           repository_id: string
           repository_name: string
           status?: string
@@ -55,12 +102,68 @@ export type Database = {
           issue_id?: string
           issue_number?: number
           issue_title?: string
+          protection_status?: string | null
           repository_id?: string
           repository_name?: string
           status?: string
           updated_at?: string
         }
         Relationships: []
+      }
+      bounty_logs: {
+        Row: {
+          action: string
+          bounty_id: string | null
+          created_at: string
+          details: Json | null
+          error_message: string | null
+          id: string
+          payout_id: string | null
+          success: boolean
+        }
+        Insert: {
+          action: string
+          bounty_id?: string | null
+          created_at?: string
+          details?: Json | null
+          error_message?: string | null
+          id?: string
+          payout_id?: string | null
+          success?: boolean
+        }
+        Update: {
+          action?: string
+          bounty_id?: string | null
+          created_at?: string
+          details?: Json | null
+          error_message?: string | null
+          id?: string
+          payout_id?: string | null
+          success?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bounty_logs_bounty_id_fkey"
+            columns: ["bounty_id"]
+            isOneToOne: false
+            referencedRelation: "active_bounties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bounty_logs_bounty_id_fkey"
+            columns: ["bounty_id"]
+            isOneToOne: false
+            referencedRelation: "bounties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bounty_logs_payout_id_fkey"
+            columns: ["payout_id"]
+            isOneToOne: false
+            referencedRelation: "payouts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       coinbase_auth: {
         Row: {
@@ -97,6 +200,7 @@ export type Database = {
           created_at: string
           enabled: boolean
           id: string
+          protection_status: string | null
           repository_description: string | null
           repository_full_name: string
           repository_id: string
@@ -110,6 +214,7 @@ export type Database = {
           created_at?: string
           enabled?: boolean
           id?: string
+          protection_status?: string | null
           repository_description?: string | null
           repository_full_name: string
           repository_id: string
@@ -123,6 +228,7 @@ export type Database = {
           created_at?: string
           enabled?: boolean
           id?: string
+          protection_status?: string | null
           repository_description?: string | null
           repository_full_name?: string
           repository_id?: string
@@ -284,6 +390,114 @@ export type Database = {
         }
         Relationships: []
       }
+      public_issues: {
+        Row: {
+          body: string | null
+          comments_count: number | null
+          complexity: string
+          created_at: string
+          html_url: string
+          id: string
+          issue_id: string
+          labels: Json | null
+          last_checked: string | null
+          number: number
+          repository_id: string
+          state: string
+          suggested_bounty: number | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body?: string | null
+          comments_count?: number | null
+          complexity?: string
+          created_at: string
+          html_url: string
+          id?: string
+          issue_id: string
+          labels?: Json | null
+          last_checked?: string | null
+          number: number
+          repository_id: string
+          state?: string
+          suggested_bounty?: number | null
+          title: string
+          updated_at: string
+        }
+        Update: {
+          body?: string | null
+          comments_count?: number | null
+          complexity?: string
+          created_at?: string
+          html_url?: string
+          id?: string
+          issue_id?: string
+          labels?: Json | null
+          last_checked?: string | null
+          number?: number
+          repository_id?: string
+          state?: string
+          suggested_bounty?: number | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      public_repositories: {
+        Row: {
+          created_at: string
+          description: string | null
+          full_name: string
+          html_url: string
+          id: string
+          language: string | null
+          last_scanned: string | null
+          name: string
+          open_issues_count: number | null
+          owner_login: string
+          owner_type: string
+          protection_status: string | null
+          repository_id: string
+          stargazers_count: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          full_name: string
+          html_url: string
+          id?: string
+          language?: string | null
+          last_scanned?: string | null
+          name: string
+          open_issues_count?: number | null
+          owner_login: string
+          owner_type: string
+          protection_status?: string | null
+          repository_id: string
+          stargazers_count?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          full_name?: string
+          html_url?: string
+          id?: string
+          language?: string | null
+          last_scanned?: string | null
+          name?: string
+          open_issues_count?: number | null
+          owner_login?: string
+          owner_type?: string
+          protection_status?: string | null
+          repository_id?: string
+          stargazers_count?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           created_at: string
@@ -368,10 +582,108 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      active_bounties: {
+        Row: {
+          amount: number | null
+          complexity: string | null
+          created_at: string | null
+          creator_id: string | null
+          currency: string | null
+          id: string | null
+          issue_id: string | null
+          issue_number: number | null
+          issue_title: string | null
+          protection_status: string | null
+          repository_id: string | null
+          repository_name: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          amount?: number | null
+          complexity?: string | null
+          created_at?: string | null
+          creator_id?: string | null
+          currency?: string | null
+          id?: string | null
+          issue_id?: string | null
+          issue_number?: number | null
+          issue_title?: string | null
+          protection_status?: string | null
+          repository_id?: string | null
+          repository_name?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number | null
+          complexity?: string | null
+          created_at?: string | null
+          creator_id?: string | null
+          currency?: string | null
+          id?: string | null
+          issue_id?: string | null
+          issue_number?: number | null
+          issue_title?: string | null
+          protection_status?: string | null
+          repository_id?: string | null
+          repository_name?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      active_repositories: {
+        Row: {
+          created_at: string | null
+          enabled: boolean | null
+          id: string | null
+          protection_status: string | null
+          repository_description: string | null
+          repository_full_name: string | null
+          repository_id: string | null
+          repository_language: string | null
+          repository_name: string | null
+          stargazers_count: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          enabled?: boolean | null
+          id?: string | null
+          protection_status?: string | null
+          repository_description?: string | null
+          repository_full_name?: string | null
+          repository_id?: string | null
+          repository_language?: string | null
+          repository_name?: string | null
+          stargazers_count?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          enabled?: boolean | null
+          id?: string | null
+          protection_status?: string | null
+          repository_description?: string | null
+          repository_full_name?: string | null
+          repository_id?: string | null
+          repository_language?: string | null
+          repository_name?: string | null
+          stargazers_count?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      safe_soft_delete: {
+        Args: { table_name: string; record_id: string; reason?: string }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never

@@ -150,7 +150,7 @@ const Documentation = () => {
         </div>
 
         {/* Help & Support */}
-        <div className="bg-gradient-to-br from-saucy-50 to-blue-50 rounded-2xl p-8 text-center">
+        <div className="bg-gradient-to-br from-saucy-50 to-saucy-100 rounded-2xl p-8 text-center">
           <Book className="h-12 w-12 text-saucy-500 mx-auto mb-4" />
           <h2 className="text-2xl font-bold mb-4">Need More Help?</h2>
           <p className="text-foreground/80 mb-6 max-w-2xl mx-auto">

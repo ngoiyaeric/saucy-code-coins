@@ -22,8 +22,8 @@
     --popover: 0 0% 98%;
     --popover-foreground: 220 27% 15%;
 
-    --primary: 200 100% 50%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 45 100% 50%;
+    --primary-foreground: 0 0% 0%;
 
     --secondary: 0 0% 96%;
     --secondary-foreground: 220 27% 15%;
@@ -31,35 +31,35 @@
     --muted: 0 0% 96%;
     --muted-foreground: 220 27% 45%;
 
-    --accent: 260 100% 50%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 35 100% 60%;
+    --accent-foreground: 0 0% 0%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 0 0% 90%;
     --input: 0 0% 94%;
-    --ring: 200 100% 50%;
+    --ring: 45 100% 50%;
 
     --radius: 0.75rem;
 
-    /* Enhanced futuristic gradients for white theme */
-    --gradient-primary: linear-gradient(135deg, hsl(200 100% 50%), hsl(260 100% 50%));
+    /* Enhanced gradients for white and yellow theme */
+    --gradient-primary: linear-gradient(135deg, hsl(45 100% 50%), hsl(35 100% 60%));
     --gradient-secondary: linear-gradient(135deg, hsl(0 0% 98%), hsl(0 0% 95%));
-    --gradient-accent: linear-gradient(45deg, hsl(200 100% 50%), hsl(260 100% 50%), hsl(300 100% 50%));
-    --gradient-hero: linear-gradient(135deg, hsl(200 100% 50% / 0.05), hsl(260 100% 50% / 0.05));
+    --gradient-accent: linear-gradient(45deg, hsl(45 100% 50%), hsl(35 100% 60%), hsl(25 100% 65%));
+    --gradient-hero: linear-gradient(135deg, hsl(45 100% 50% / 0.05), hsl(35 100% 60% / 0.05));
     --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(0 0% 98%));
     
-    /* Enhanced 3D Effects for white theme */
-    --shadow-3d: 0 20px 40px -12px hsl(220 27% 15% / 0.1), 0 0 0 1px hsl(200 100% 50% / 0.1);
-    --shadow-glow: 0 0 60px hsl(200 100% 50% / 0.3);
+    /* Enhanced 3D Effects for white and yellow theme */
+    --shadow-3d: 0 20px 40px -12px hsl(220 27% 15% / 0.1), 0 0 0 1px hsl(45 100% 50% / 0.1);
+    --shadow-glow: 0 0 60px hsl(45 100% 50% / 0.3);
     --shadow-card: 0 10px 30px -5px hsl(220 27% 15% / 0.08);
     --shadow-text: 1px 1px 2px hsl(220 27% 15% / 0.1);
     
-    /* Enhanced tech patterns for white theme */
-    --grid-pattern: radial-gradient(circle at 1px 1px, hsl(200 100% 50% / 0.1) 1px, transparent 0);
-    --circuit-pattern: linear-gradient(90deg, hsl(200 100% 50% / 0.05) 1px, transparent 1px), 
-                      linear-gradient(hsl(200 100% 50% / 0.05) 1px, transparent 1px);
+    /* Enhanced tech patterns for white and yellow theme */
+    --grid-pattern: radial-gradient(circle at 1px 1px, hsl(45 100% 50% / 0.1) 1px, transparent 0);
+    --circuit-pattern: linear-gradient(90deg, hsl(45 100% 50% / 0.05) 1px, transparent 1px), 
+                      linear-gradient(hsl(45 100% 50% / 0.05) 1px, transparent 1px);
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;

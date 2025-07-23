@@ -96,7 +96,7 @@ const HeroSection = () => {
                 <span>Real-time payouts</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-blue-500 rounded-full pulse-glow"></div>
+                <div className="w-2 h-2 bg-yellow-500 rounded-full pulse-glow"></div>
                 <span>Secure & automated</span>
               </div>
               <div className="flex items-center gap-2">

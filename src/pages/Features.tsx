@@ -102,7 +102,7 @@ const Features = () => {
         </div>
 
         {/* Benefits Section */}
-        <div className="bg-gradient-to-br from-saucy-50 to-blue-50 rounded-2xl p-8 mb-16">
+        <div className="bg-gradient-to-br from-saucy-50 to-saucy-100 rounded-2xl p-8 mb-16">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold text-center mb-8">Why Choose Saucy?</h2>
             <div className="grid md:grid-cols-2 gap-6">

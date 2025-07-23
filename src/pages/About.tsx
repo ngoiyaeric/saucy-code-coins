@@ -55,7 +55,7 @@ const About = () => {
               Open source software powers the world, but most contributors aren't fairly compensated for their work. 
               We're changing that by making it easy for projects to reward contributors automatically when their code is merged.
             </p>
-            <div className="bg-gradient-to-br from-saucy-50 to-blue-50 rounded-2xl p-8">
+            <div className="bg-gradient-to-br from-saucy-50 to-saucy-100 rounded-2xl p-8">
               <p className="text-xl font-medium text-foreground">
                 "Every line of code that makes software better deserves recognition and reward."
               </p>

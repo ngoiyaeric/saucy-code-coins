@@ -3,8 +3,12 @@ interface BlogContentProps {
 }
 
 const BlogContent = ({ content }: BlogContentProps) => {
-  // Simple markdown-like rendering
+  // Simple markdown-like rendering with safety checks
   const renderContent = (text: string) => {
+    if (!text || typeof text !== 'string') {
+      return [<p key="empty" className="text-muted-foreground">No content available.</p>];
+    }
+    
     const lines = text.split('\n');
     const elements: JSX.Element[] = [];
     let currentIndex = 0;

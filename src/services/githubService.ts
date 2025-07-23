@@ -106,8 +106,8 @@ export class GitHubService {
       .eq('user_id', session.user.id)
       .single();
 
-    if (error || !githubAuth) {
-      throw new Error('No GitHub access token found. Please connect your GitHub account.');
+    if (error || !githubAuth?.access_token) {
+      throw new Error('No GitHub access token found. Please sign in with GitHub first.');
     }
 
     return githubAuth.access_token;
@@ -123,10 +123,22 @@ export class GitHubService {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Accept': 'application/vnd.github.v3+json',
+        'User-Agent': 'Saucy-App/1.0',
       },
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`GitHub API error: ${response.status} ${response.statusText}`, errorText);
+      
+      if (response.status === 401 || response.status === 403) {
+        throw new Error('GitHub API authentication failed. Please reconnect your GitHub account.');
+      } else if (response.status === 404) {
+        throw new Error('Repository or resource not found. Check permissions.');
+      } else if (response.status === 429) {
+        throw new Error('GitHub API rate limit exceeded. Please try again later.');
+      }
+      
       throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
     }
 

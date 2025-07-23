@@ -34,10 +34,16 @@ const Blog = () => {
         .eq('published', true)
         .order('published_at', { ascending: false });
 
-      if (error) throw error;
-      setPosts(data || []);
+      if (error) {
+        console.error('Database error fetching blog posts:', error);
+        throw error;
+      }
+      
+      // Ensure we have valid data
+      setPosts(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching blog posts:', error);
+      setPosts([]); // Set empty array on error to prevent crashes
     } finally {
       setLoading(false);
     }

@@ -37,14 +37,13 @@ const BlogPost = () => {
         .select('id, title, content, published_at, tags, featured_image_url')
         .eq('slug', slug)
         .eq('published', true)
-        .single();
+        .maybeSingle();
 
       if (error) {
-        if (error.code === 'PGRST116') {
-          setNotFound(true);
-        } else {
-          throw error;
-        }
+        throw error;
+      } else if (!data) {
+        // No post found with this slug
+        setNotFound(true);
       } else {
         setPost(data);
       }

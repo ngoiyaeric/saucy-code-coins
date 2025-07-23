@@ -49,6 +49,12 @@ const Navbar = ({ transparent = false }: NavbarProps) => {
               >
                 Documentation
               </Link>
+              <Link 
+                to="/blog" 
+                className="text-foreground/80 hover:text-foreground px-3 py-2 rounded-md text-sm font-medium"
+              >
+                Blog
+              </Link>
 
 
               {user ? (
@@ -138,6 +144,12 @@ const Navbar = ({ transparent = false }: NavbarProps) => {
             className="text-foreground/80 hover:text-foreground block px-3 py-2 rounded-md text-base font-medium"
           >
             Documentation
+          </Link>
+          <Link
+            to="/blog"
+            className="text-foreground/80 hover:text-foreground block px-3 py-2 rounded-md text-base font-medium"
+          >
+            Blog
           </Link>
           
           

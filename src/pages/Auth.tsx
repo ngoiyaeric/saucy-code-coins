@@ -82,14 +82,11 @@ const Auth = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1 text-center">
           <div className="flex items-center justify-center mb-4">
-            <div className="flex items-center space-x-2">
-              <span className="text-3xl font-bold text-saucy-600">Saucy</span>
-              <img 
-                src="/lovable-uploads/67b2f38c-35dd-4070-9429-cef9fffdcfd7.png" 
-                alt="Saucy Logo" 
-                className="h-10 w-10"
-              />
-            </div>
+            <img 
+              src="/lovable-uploads/67b2f38c-35dd-4070-9429-cef9fffdcfd7.png" 
+              alt="Saucy Logo" 
+              className="h-12 w-12"
+            />
           </div>
           <CardTitle className="text-2xl font-bold">Welcome to Saucy</CardTitle>
           <CardDescription>

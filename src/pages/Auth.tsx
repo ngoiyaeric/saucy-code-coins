@@ -88,7 +88,7 @@ const Auth = () => {
               className="h-12 w-12"
             />
           </div>
-          <CardTitle className="text-2xl font-bold">Welcome to Saucy</CardTitle>
+          <CardTitle className="text-2xl font-bold text-primary">Welcome to Saucy</CardTitle>
           <CardDescription>
             Sign in with GitHub to start earning crypto for your contributions. 
             We'll access your repositories and organizations to set up automated payouts.

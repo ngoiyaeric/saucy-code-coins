@@ -29,7 +29,6 @@ const Auth = () => {
 
   useEffect(() => {
     if (user && !loading) {
-      console.log('User authenticated, redirecting to dashboard');
       navigate('/dashboard');
     }
   }, [user, loading, navigate]);
@@ -38,8 +37,6 @@ const Auth = () => {
     try {
       setIsLoading(true);
       setError(null);
-      
-      console.log('Attempting GitHub sign in with organization access...');
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'github',
@@ -53,8 +50,6 @@ const Auth = () => {
         }
       });
 
-      console.log('GitHub OAuth response:', { data, error });
-
       if (error) {
         console.error('GitHub sign in error:', error);
         setError(error.message);
@@ -63,7 +58,6 @@ const Auth = () => {
       }
 
       // The redirect will happen automatically if successful
-      console.log('GitHub OAuth initiated successfully');
       
     } catch (error: any) {
       console.error('Unexpected GitHub sign in error:', error);

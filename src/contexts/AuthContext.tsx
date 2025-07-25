@@ -38,6 +38,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
           setSession(session);
           setUser(session?.user ?? null);
+          
+          // If this is a new sign-in and we have a session, capture GitHub token
+          if (event === 'SIGNED_IN' && session?.user) {
+            console.log('New sign-in detected, attempting to capture GitHub token...');
+            setTimeout(async () => {
+              try {
+                const { data, error } = await supabase.functions.invoke('capture-github-token', {
+                  headers: {
+                    Authorization: `Bearer ${session.access_token}`,
+                  },
+                });
+                
+                if (error) {
+                  console.error('Error capturing GitHub token:', error);
+                } else {
+                  console.log('GitHub token capture result:', data);
+                }
+              } catch (error) {
+                console.error('Failed to invoke capture-github-token:', error);
+              }
+            }, 1000); // Small delay to ensure the session is fully established
+          }
         } else if (event === 'SIGNED_OUT') {
           setSession(null);
           setUser(null);

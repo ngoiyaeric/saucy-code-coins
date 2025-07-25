@@ -105,3 +105,6 @@ verify_jwt = false
 
 [functions.bank-transfer]
 verify_jwt = true
+
+[functions.capture-github-token]
+verify_jwt = true

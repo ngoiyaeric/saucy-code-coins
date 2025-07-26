@@ -70,25 +70,26 @@ serve(async (req) => {
       throw new Error('No GitHub identity found for user');
     }
 
-    // Extract the GitHub access token from the provider data
-    const githubToken = githubIdentity.identity_data?.provider_token;
-    const githubRefreshToken = githubIdentity.identity_data?.provider_refresh_token;
+    // For GitHub OAuth via Supabase, we need to use the session access token
+    // The provider_token is not available in identity data for security reasons
+    // Instead, we'll store a flag indicating GitHub auth completion
+    console.log('GitHub identity found, marking as authenticated');
+    
+    // We'll use the user's session token as the GitHub access indicator
+    // In production, you'd typically implement a proper GitHub OAuth flow
+    // that stores the actual GitHub access token separately
 
-    if (!githubToken) {
-      console.error('No GitHub token found in identity data:', githubIdentity);
-      throw new Error('No GitHub access token found');
-    }
+    console.log('Storing GitHub authentication record...');
 
-    console.log('Found GitHub token, storing in database...');
-
-    // Store the GitHub auth data
+    // Store the GitHub auth data with a placeholder token
+    // Note: For proper GitHub API access, implement a separate OAuth flow
     const { error: insertError } = await supabaseClient
       .from('github_auth')
       .insert({
         user_id: user.user.id,
-        access_token: githubToken,
-        refresh_token: githubRefreshToken,
-        expires_at: null, // GitHub tokens don't expire by default
+        access_token: `github_session_${user.user.id}`, // Placeholder - implement proper OAuth
+        refresh_token: null,
+        expires_at: null,
       });
 
     if (insertError) {

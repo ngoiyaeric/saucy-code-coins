@@ -108,3 +108,6 @@ verify_jwt = true
 
 [functions.capture-github-token]
 verify_jwt = true
+
+[functions.github-app-auth]
+verify_jwt = true

@@ -24,12 +24,12 @@ const Navbar = ({ transparent = false }: NavbarProps) => {
           {/* Logo and brand */}
           <div className="flex items-center">
             <Link to="/" className="flex items-center space-x-2">
+              <span className="text-2xl font-bold text-primary">Saucy</span>
               <img 
                 src="/lovable-uploads/af306466-7387-4b4f-bd60-ae9348a80cdd.png" 
                 alt="Saucy Logo" 
                 className="h-8 w-8"
               />
-              <span className="text-2xl font-bold text-primary">Saucy</span>
             </Link>
           </div>
 

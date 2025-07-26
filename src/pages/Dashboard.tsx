@@ -33,6 +33,9 @@ const Dashboard = () => {
   const [enabledRepos, setEnabledRepos] = useState<Record<string, boolean>>({});
   const [toggleLoading, setToggleLoading] = useState<Set<string>>(new Set());
   const [processingIssues, setProcessingIssues] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<GitHubRepository[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
     loadDashboardData();
@@ -151,6 +154,9 @@ const Dashboard = () => {
       
       // Log results for debugging
       results.forEach(result => {
+        if (result.hasError) {
+          toast.error(`Failed to process ${result.repository.full_name}: ${result.errorMessage}`);
+        }
         console.log(`Repository ${result.repository.full_name}:`, {
           issues: result.issues.length,
           bounties: result.bountyAssignments.length,
@@ -236,6 +242,26 @@ const Dashboard = () => {
         newSet.delete(repoId);
         return newSet;
       });
+    }
+  };
+
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    setIsSearching(true);
+    try {
+      const results = await GitHubService.searchPublicRepositories(searchQuery.trim());
+      setSearchResults(results);
+      if (results.length === 0) {
+        toast.info("No public repositories found for your query.");
+      }
+    } catch (error) {
+      console.error("Error searching repositories:", error);
+      toast.error("Failed to search for repositories.");
+    } finally {
+      setIsSearching(false);
     }
   };
 
@@ -369,6 +395,88 @@ const Dashboard = () => {
                 </Button>
               </div>
             </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Find Public Repositories</CardTitle>
+                <CardDescription>Search for public repositories on GitHub and enable them for bounty management.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="e.g., 'supabase/supabase'"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full p-2 border rounded-md"
+                  />
+                  <Button onClick={handleSearch} disabled={isSearching}>
+                    {isSearching ? 'Searching...' : 'Search'}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {searchResults.length > 0 && (
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold mb-4">Search Results</h3>
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {searchResults.map((repo) => {
+                    const repoId = repo.id.toString();
+                    const isEnabled = enabledRepos[repoId] || false;
+                    const isToggling = toggleLoading.has(repoId);
+
+                    return (
+                      <Card key={repo.id} className={`card-3d ${isEnabled ? 'ring-2 ring-primary/20' : ''}`}>
+                        <CardHeader>
+                          <div className="flex items-start justify-between">
+                            <div className="space-y-1">
+                              <CardTitle className="text-sm">{repo.full_name}</CardTitle>
+                              <CardDescription className="text-xs">{repo.description || 'No description'}</CardDescription>
+                            </div>
+                            <Switch
+                              checked={isEnabled}
+                              onCheckedChange={() => toggleRepository(repo)}
+                              disabled={isToggling}
+                              className="ml-2"
+                            />
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="flex justify-between text-xs mb-2">
+                            <span>Language: {repo.language || 'N/A'}</span>
+                            <span>⭐ {repo.stargazers_count}</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className={`text-xs px-2 py-1 rounded ${
+                              isEnabled
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-gray-100 text-gray-800'
+                            }`}>
+                              {isEnabled ? 'Enabled' : 'Disabled'}
+                            </span>
+                          </div>
+                        </CardContent>
+                        <CardFooter className="flex justify-between">
+                          <Button variant="outline" size="sm" asChild>
+                            <a href={repo.html_url} target="_blank" rel="noopener noreferrer">
+                              View on GitHub
+                            </a>
+                          </Button>
+                          {isEnabled && (
+                            <Button size="sm" asChild>
+                              <Link to={`/repositories/${repoId}/issues`}>
+                                Manage Issues
+                              </Link>
+                            </Button>
+                          )}
+                        </CardFooter>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {githubData && (
               <div className="mb-6">

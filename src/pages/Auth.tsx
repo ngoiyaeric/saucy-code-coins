@@ -83,7 +83,7 @@ const Auth = () => {
         <CardHeader className="space-y-1 text-center">
           <div className="flex items-center justify-center mb-4">
             <img 
-              src="/lovable-uploads/67b2f38c-35dd-4070-9429-cef9fffdcfd7.png" 
+              src="/lovable-uploads/af306466-7387-4b4f-bd60-ae9348a80cdd.png" 
               alt="Saucy Logo" 
               className="h-12 w-12"
             />

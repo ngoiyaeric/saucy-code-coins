@@ -56,21 +56,6 @@ const HeroSection = () => {
             </span>
           </p>
 
-          {/* Stats Section */}
-          <div className="mt-16 mb-12 stats-grid max-w-3xl mx-auto">
-            <div className="card-3d rounded-2xl p-6 text-center">
-              <div className="text-3xl font-bold text-primary">$50K+</div>
-              <div className="text-sm text-foreground/70 mt-1">Payouts Processed</div>
-            </div>
-            <div className="card-3d rounded-2xl p-6 text-center">
-              <div className="text-3xl font-bold text-primary">500+</div>
-              <div className="text-sm text-foreground/70 mt-1">Active Repositories</div>
-            </div>
-            <div className="card-3d rounded-2xl p-6 text-center">
-              <div className="text-3xl font-bold text-primary">2.5%</div>
-              <div className="text-sm text-foreground/70 mt-1">Simple Fee</div>
-            </div>
-          </div>
           
           {/* Enhanced 3D Button container */}
           <div className="mt-12 perspective-container">
